@@ -1,97 +1,97 @@
-ï»¿@echo off
-chcp 65001 >nul
+@echo off
+chcp 936 >nul
 setlocal enabledelayedexpansion
-title ä¸‰è§’æ´²è¡ŒåŠ¨ CPU è™šæ‹ŸåŒ–é—®é¢˜ - è¯Šæ–­è„šæœ¬
+title Èı½ÇÖŞĞĞ¶¯ CPU ĞéÄâ»¯ÎÊÌâ - Õï¶Ï½Å±¾
 
 rem ============================================================
 rem   diagnose-vbs.bat
-rem   å¯¹é½è…¾è®¯æ¸¸æˆå®‰å…¨å®˜æ–¹æŒ‡å¼• gamesafe.qq.com/article/1181.shtml
-rem   è¦†ç›– Part1(BIOS) + æƒ…å†µä¸€ HVCI + æƒ…å†µäºŒ VBS + æƒ…å†µä¸‰ Hyper-V + æƒ…å†µå›› å…¶ä»–
+rem   ¶ÔÆëÌÚÑ¶ÓÎÏ·°²È«¹Ù·½Ö¸Òı gamesafe.qq.com/article/1181.shtml
+rem   ¸²¸Ç Part1(BIOS) + Çé¿öÒ» HVCI + Çé¿ö¶ş VBS + Çé¿öÈı Hyper-V + Çé¿öËÄ ÆäËû
 rem ============================================================
 
-rem ---------- ç®¡ç†å‘˜æƒé™æ£€æµ‹ï¼ˆä¸è¶³æ—¶è‡ªåŠ¨ææƒï¼‰ ----------
+rem ---------- ¹ÜÀíÔ±È¨ÏŞ¼ì²â£¨²»×ãÊ±×Ô¶¯ÌáÈ¨£© ----------
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo.
-    echo   [æç¤º] å½“å‰ä¸æ˜¯ç®¡ç†å‘˜æƒé™ï¼Œæ­£åœ¨å°è¯•è‡ªåŠ¨ææƒ...
-    echo   è¯·åœ¨å¼¹å‡ºçš„ã€Œç”¨æˆ·è´¦æˆ·æ§åˆ¶ã€çª—å£ä¸­ç‚¹ã€Œæ˜¯ã€ã€‚
+    echo   [ÌáÊ¾] µ±Ç°²»ÊÇ¹ÜÀíÔ±È¨ÏŞ£¬ÕıÔÚ³¢ÊÔ×Ô¶¯ÌáÈ¨...
+    echo   ÇëÔÚµ¯³öµÄ¡¸ÓÃ»§ÕË»§¿ØÖÆ¡¹´°¿ÚÖĞµã¡¸ÊÇ¡¹¡£
     echo.
     powershell -NoProfile -Command "Start-Process -FilePath '%~f0' -Verb RunAs" >nul 2>&1
     if %errorlevel% neq 0 (
-        echo   [é”™è¯¯] è‡ªåŠ¨ææƒå¤±è´¥ã€‚è¯·å³é”®æœ¬æ–‡ä»¶ -^> ä»¥ç®¡ç†å‘˜èº«ä»½è¿è¡Œã€‚
+        echo   [´íÎó] ×Ô¶¯ÌáÈ¨Ê§°Ü¡£ÇëÓÒ¼ü±¾ÎÄ¼ş -^> ÒÔ¹ÜÀíÔ±Éí·İÔËĞĞ¡£
         echo.
-        set /p "_=æŒ‰å›è½¦é€€å‡º..."
+        set /p "_=°´»Ø³µÍË³ö..."
     )
     exit /b 1
 )
 
 echo ============================================================
-echo   ä¸‰è§’æ´²è¡ŒåŠ¨ CPU è™šæ‹ŸåŒ–é—®é¢˜ - è¯Šæ–­æŠ¥å‘Š
-echo   å®˜æ–¹æŒ‡å¼•å‚è€ƒï¼šhttps://gamesafe.qq.com/article/1181.shtml
+echo   Èı½ÇÖŞĞĞ¶¯ CPU ĞéÄâ»¯ÎÊÌâ - Õï¶Ï±¨¸æ
+echo   ¹Ù·½Ö¸Òı²Î¿¼£ºhttps://gamesafe.qq.com/article/1181.shtml
 echo ============================================================
 echo.
 
-rem ---------- [1/8] BIOS å±‚ CPU è™šæ‹ŸåŒ– ----------
-echo [1/8] BIOS å±‚ CPU è™šæ‹ŸåŒ–ï¼ˆVT-X/VT-D æˆ– SVM/IOMMUï¼‰...
-powershell -NoProfile -Command "$p = Get-CimInstance Win32_Processor; '{0,-32} {1}' -f 'å¤„ç†å™¨åç§°:', $p.Name; '{0,-32} {1}' -f 'VirtualizationFirmwareEnabled:', $p.VirtualizationFirmwareEnabled; '{0,-32} {1}' -f 'VMMonitorModeExtensions:', $p.VMMonitorModeExtensions"
-echo       ^> è‹¥ä¸Šè¿°å‡ä¸º false/0ï¼Œè¯·è¿› BIOS å¼€å¯ï¼šå‚è€ƒ README ç¬¬ 5 èŠ‚ï¼Œæˆ–å®˜æ–¹ Part1 å›¾æ–‡æŒ‡å¼•ã€‚
+rem ---------- [1/8] BIOS ²ã CPU ĞéÄâ»¯ ----------
+echo [1/8] BIOS ²ã CPU ĞéÄâ»¯£¨VT-X/VT-D »ò SVM/IOMMU£©...
+powershell -NoProfile -Command "$p = Get-CimInstance Win32_Processor; '{0,-32} {1}' -f '´¦ÀíÆ÷Ãû³Æ:', $p.Name; '{0,-32} {1}' -f 'VirtualizationFirmwareEnabled:', $p.VirtualizationFirmwareEnabled; '{0,-32} {1}' -f 'VMMonitorModeExtensions:', $p.VMMonitorModeExtensions"
+echo       ^> ÈôÉÏÊö¾ùÎª false/0£¬Çë½ø BIOS ¿ªÆô£º²Î¿¼ README µÚ 5 ½Ú£¬»ò¹Ù·½ Part1 Í¼ÎÄÖ¸Òı¡£
 echo.
 
 rem ---------- [2/8] hypervisorlaunchtype ----------
-echo [2/8] hypervisorlaunchtypeï¼ˆåº”ç›®æ ‡ä¸º Offï¼‰...
+echo [2/8] hypervisorlaunchtype£¨Ó¦Ä¿±êÎª Off£©...
 bcdedit /enum {current} 2>nul | findstr /i hypervisor
-if %errorlevel% neq 0 echo       ^(æœªè¾“å‡º hypervisor é¡¹ï¼Œè¯´æ˜æ˜¯é»˜è®¤å€¼ Auto^)
+if %errorlevel% neq 0 echo       ^(Î´Êä³ö hypervisor Ïî£¬ËµÃ÷ÊÇÄ¬ÈÏÖµ Auto^)
 echo.
 
-rem ---------- [3/8] VBS çŠ¶æ€ ----------
-echo [3/8] VBSï¼ˆåŸºäºè™šæ‹ŸåŒ–çš„å®‰å…¨æ€§ï¼‰çŠ¶æ€...
-echo       VirtualizationBasedSecurityStatus: 0=æœªå¯ç”¨  1=å·²å¯ç”¨æœªè¿è¡Œ  2=å·²è¿è¡Œ ^<-- 2 å³å ç”¨ VT-x
+rem ---------- [3/8] VBS ×´Ì¬ ----------
+echo [3/8] VBS£¨»ùÓÚĞéÄâ»¯µÄ°²È«ĞÔ£©×´Ì¬...
+echo       VirtualizationBasedSecurityStatus: 0=Î´ÆôÓÃ  1=ÒÑÆôÓÃÎ´ÔËĞĞ  2=ÒÑÔËĞĞ ^<-- 2 ¼´Õ¼ÓÃ VT-x
 powershell -NoProfile -Command "Get-CimInstance -Namespace root\Microsoft\Windows\DeviceGuard -ClassName Win32_DeviceGuard -ErrorAction SilentlyContinue | Select-Object VirtualizationBasedSecurityStatus, SecurityServicesConfigured, SecurityServicesRunning | Format-List"
 echo.
 
-rem ---------- [4/8] HVCI å†…å­˜å®Œæ•´æ€§ ----------
-echo [4/8] HVCI å†…å­˜å®Œæ•´æ€§ï¼ˆæƒ…å†µä¸€ï¼‰...
-echo       SecurityServicesRunning å« 2 è¡¨ç¤º HVCI åœ¨è·‘ï¼›ä¸‹é¢æ³¨å†Œè¡¨ Enabled=1 è¡¨ç¤ºå·²é…ç½®
+rem ---------- [4/8] HVCI ÄÚ´æÍêÕûĞÔ ----------
+echo [4/8] HVCI ÄÚ´æÍêÕûĞÔ£¨Çé¿öÒ»£©...
+echo       SecurityServicesRunning º¬ 2 ±íÊ¾ HVCI ÔÚÅÜ£»ÏÂÃæ×¢²á±í Enabled=1 ±íÊ¾ÒÑÅäÖÃ
 powershell -NoProfile -Command "$v = (Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity' -ErrorAction SilentlyContinue).Enabled; 'HypervisorEnforcedCodeIntegrity.Enabled = {0}' -f $v"
 echo.
 
-rem ---------- [5/8] Hyper-V / è™šæ‹ŸåŒ–å¹³å° Windows ç‰¹æ€§ ----------
-echo [5/8] Hyper-V ç­‰è™šæ‹ŸåŒ–ç›¸å…³ Windows ç‰¹æ€§ï¼ˆæƒ…å†µä¸‰ï¼‰...
+rem ---------- [5/8] Hyper-V / ĞéÄâ»¯Æ½Ì¨ Windows ÌØĞÔ ----------
+echo [5/8] Hyper-V µÈĞéÄâ»¯Ïà¹Ø Windows ÌØĞÔ£¨Çé¿öÈı£©...
 powershell -NoProfile -Command "Get-WindowsOptionalFeature -Online 2>$null | Where-Object { $_.FeatureName -match 'Hyper-V|VirtualMachinePlatform|HypervisorPlatform|Containers-DisposableClientVM|Microsoft-Windows-Subsystem-Linux' } | Select-Object FeatureName, State | Format-Table -AutoSize"
 echo.
 
-rem ---------- [6/8] WindowsHello ç”Ÿç‰©è¯†åˆ« ----------
-echo [6/8] WindowsHello é¢éƒ¨/æŒ‡çº¹ï¼ˆæƒ…å†µå››-aï¼Œå¯èƒ½é˜»æ­¢ Hyper-V å…³é—­ï¼‰...
-powershell -NoProfile -Command "$k = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WinBio\Databases'; if (Test-Path $k) { 'WinBio Databases å­˜åœ¨ ^<-- è‹¥å¯ç”¨äº†é¢éƒ¨/æŒ‡çº¹ç™»å½•ï¼Œè¯·å…ˆåœ¨ è®¾ç½®->è´¦æˆ·->ç™»å½• ä¸­å…³é—­åå†å…³ Hyper-V' } else { 'æœªå‘ç° WinBio Databases' }"
-powershell -NoProfile -Command "$ngc = 'HKLM:\SOFTWARE\Microsoft\Windows Hello\Business\Ngc'; if (Test-Path $ngc) { $v = (Get-ItemProperty $ngc -ErrorAction SilentlyContinue).Enable; 'Windows Hello Business Ngc.Enable = {0}' -f $v } else { 'æœªé…ç½® Windows Hello for Business' }"
+rem ---------- [6/8] WindowsHello ÉúÎïÊ¶±ğ ----------
+echo [6/8] WindowsHello Ãæ²¿/Ö¸ÎÆ£¨Çé¿öËÄ-a£¬¿ÉÄÜ×èÖ¹ Hyper-V ¹Ø±Õ£©...
+powershell -NoProfile -Command "$k = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WinBio\Databases'; if (Test-Path $k) { 'WinBio Databases ´æÔÚ ^<-- ÈôÆôÓÃÁËÃæ²¿/Ö¸ÎÆµÇÂ¼£¬ÇëÏÈÔÚ ÉèÖÃ->ÕË»§->µÇÂ¼ ÖĞ¹Ø±ÕºóÔÙ¹Ø Hyper-V' } else { 'Î´·¢ÏÖ WinBio Databases' }"
+powershell -NoProfile -Command "$ngc = 'HKLM:\SOFTWARE\Microsoft\Windows Hello\Business\Ngc'; if (Test-Path $ngc) { $v = (Get-ItemProperty $ngc -ErrorAction SilentlyContinue).Enable; 'Windows Hello Business Ngc.Enable = {0}' -f $v } else { 'Î´ÅäÖÃ Windows Hello for Business' }"
 echo.
 
-rem ---------- [7/8] ç¬¬ä¸‰æ–¹æ€è½¯ ----------
-echo [7/8] å·²å®‰è£…çš„æ€æ¯’è½¯ä»¶ï¼ˆæƒ…å†µå››-bï¼Œç¬¬ä¸‰æ–¹æ€è½¯å¯èƒ½å ç”¨ VT-xï¼‰...
+rem ---------- [7/8] µÚÈı·½É±Èí ----------
+echo [7/8] ÒÑ°²×°µÄÉ±¶¾Èí¼ş£¨Çé¿öËÄ-b£¬µÚÈı·½É±Èí¿ÉÄÜÕ¼ÓÃ VT-x£©...
 powershell -NoProfile -Command "Get-CimInstance -Namespace root\SecurityCenter2 -ClassName AntiVirusProduct -ErrorAction SilentlyContinue | Select-Object displayName, productState | Format-Table -AutoSize"
-echo       ^> è‹¥åˆ—å‡ºé Windows Defender çš„æ€è½¯ï¼Œè¯·å°è¯•é€€å‡ºåå†è¿›æ¸¸æˆã€‚
+echo       ^> ÈôÁĞ³ö·Ç Windows Defender µÄÉ±Èí£¬Çë³¢ÊÔÍË³öºóÔÙ½øÓÎÏ·¡£
 echo.
 
-rem ---------- [8/8] DeviceGuard æ³¨å†Œè¡¨æ®‹ç•™ ----------
-echo [8/8] DeviceGuard ç›¸å…³æ³¨å†Œè¡¨ï¼ˆæƒ…å†µå››-c/dï¼‰...
+rem ---------- [8/8] DeviceGuard ×¢²á±í²ĞÁô ----------
+echo [8/8] DeviceGuard Ïà¹Ø×¢²á±í£¨Çé¿öËÄ-c/d£©...
 powershell -NoProfile -Command "$base = 'HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard'; $keys = @('EnableVirtualizationBasedSecurity','LsaCfgFlags'); foreach ($k in $keys) { $v = (Get-ItemProperty $base -ErrorAction SilentlyContinue).$k; '{0,-40} = {1}' -f $k, $v }; $scn = Join-Path $base 'Scenarios'; if (Test-Path $scn) { Get-ChildItem $scn | ForEach-Object { $e = (Get-ItemProperty $_.PSPath -ErrorAction SilentlyContinue).Enabled; 'Scenarios\{0}\Enabled = {1}' -f $_.PSChildName, $e } }"
 echo.
 
-rem ---------- è¯Šæ–­ç»“è®º ----------
+rem ---------- Õï¶Ï½áÂÛ ----------
 echo ============================================================
-echo   è¯Šæ–­ç»“è®ºä¸å»ºè®®
+echo   Õï¶Ï½áÂÛÓë½¨Òé
 echo ============================================================
-echo   - è‹¥ [1/8] æ˜¾ç¤º falseï¼šè¯·åœ¨ BIOS å¼€å¯ VT-X/VT-D æˆ– SVM/IOMMUï¼ˆå‚è€ƒ README ç¬¬ 5 èŠ‚ï¼‰
-echo   - è‹¥ [3/8] VirtualizationBasedSecurityStatus = 2ï¼šè¿è¡Œ fix-vbs.bat èœå• 1ï¼ˆæƒ…å†µäºŒ VBSï¼‰
-echo   - è‹¥ [4/8] HVCI Enabled = 1ï¼šè¿è¡Œ fix-vbs.bat èœå• 3ï¼ˆæƒ…å†µä¸€ å†…å­˜å®Œæ•´æ€§ï¼‰
-echo   - è‹¥ [5/8] Hyper-V ç­‰æ˜¾ç¤º Enabledï¼šè¿è¡Œ fix-vbs.bat èœå• 4ï¼ˆæƒ…å†µä¸‰ Hyper-Vï¼‰
-echo   - è‹¥ [6/8] å¯ç”¨äº†é¢éƒ¨/æŒ‡çº¹ï¼šå…ˆæ‰‹åŠ¨å…³é—­ï¼Œæˆ–è¿è¡Œ fix-vbs.bat èœå• 2ï¼ˆæƒ…å†µå››-a WindowsHelloï¼‰
-echo   - è‹¥ [7/8] æœ‰ç¬¬ä¸‰æ–¹æ€è½¯ï¼šé€€å‡ºåå†è¿›æ¸¸æˆï¼ˆæƒ…å†µå››-bï¼‰
-echo   - è‹¥ [8/8] DeviceGuard å„é¡¹é 0ï¼šè¿è¡Œ fix-vbs.bat èœå• 5ï¼ˆæƒ…å†µå››-c/d æ³¨å†Œè¡¨æ®‹ç•™ï¼‰
-echo   - ä¸ç¡®å®šï¼Ÿç›´æ¥è¿è¡Œ fix-vbs.bat èœå• 5 ä¸€é”®è‡ªåŠ¨ä¿®å¤
+echo   - Èô [1/8] ÏÔÊ¾ false£ºÇëÔÚ BIOS ¿ªÆô VT-X/VT-D »ò SVM/IOMMU£¨²Î¿¼ README µÚ 5 ½Ú£©
+echo   - Èô [3/8] VirtualizationBasedSecurityStatus = 2£ºÔËĞĞ fix-vbs.bat ²Ëµ¥ 1£¨Çé¿ö¶ş VBS£©
+echo   - Èô [4/8] HVCI Enabled = 1£ºÔËĞĞ fix-vbs.bat ²Ëµ¥ 3£¨Çé¿öÒ» ÄÚ´æÍêÕûĞÔ£©
+echo   - Èô [5/8] Hyper-V µÈÏÔÊ¾ Enabled£ºÔËĞĞ fix-vbs.bat ²Ëµ¥ 4£¨Çé¿öÈı Hyper-V£©
+echo   - Èô [6/8] ÆôÓÃÁËÃæ²¿/Ö¸ÎÆ£ºÏÈÊÖ¶¯¹Ø±Õ£¬»òÔËĞĞ fix-vbs.bat ²Ëµ¥ 2£¨Çé¿öËÄ-a WindowsHello£©
+echo   - Èô [7/8] ÓĞµÚÈı·½É±Èí£ºÍË³öºóÔÙ½øÓÎÏ·£¨Çé¿öËÄ-b£©
+echo   - Èô [8/8] DeviceGuard ¸÷Ïî·Ç 0£ºÔËĞĞ fix-vbs.bat ²Ëµ¥ 5£¨Çé¿öËÄ-c/d ×¢²á±í²ĞÁô£©
+echo   - ²»È·¶¨£¿Ö±½ÓÔËĞĞ fix-vbs.bat ²Ëµ¥ 5 Ò»¼ü×Ô¶¯ĞŞ¸´
 echo.
-echo   ä¿®å¤åè¯·é‡å¯ç”µè„‘ï¼Œå†ç”¨æœ¬è„šæœ¬å¤æŸ¥ã€‚
+echo   ĞŞ¸´ºóÇëÖØÆôµçÄÔ£¬ÔÙÓÃ±¾½Å±¾¸´²é¡£
 echo ============================================================
 echo.
-set /p "_=æŒ‰å›è½¦é€€å‡º..."
+set /p "_=°´»Ø³µÍË³ö..."
 endlocal

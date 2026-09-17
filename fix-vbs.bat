@@ -1,34 +1,34 @@
-ï»¿@echo off
-chcp 65001 >nul
+@echo off
+chcp 936 >nul
 setlocal enabledelayedexpansion
-title ä¸‰è§’æ´²è¡ŒåŠ¨ CPU è™šæ‹ŸåŒ–ä¿®å¤å·¥å…·
+title Èý½ÇÖÞÐÐ¶¯ CPU ÐéÄâ»¯ÐÞ¸´¹¤¾ß
 
 rem ============================================================
-rem   fix-vbs.bat  å¯¹é½ gamesafe.qq.com/article/1181.shtml
-rem   èœå•ï¼š
-rem     0 é€€å‡º
-rem     1 å…³é—­ VBSï¼ˆæƒ…å†µäºŒï¼‰            bcdedit /set hypervisorlaunchtype off
-rem     2 å…³é—­ WindowsHello VBSï¼ˆæƒ…å†µå››-aï¼‰ æ³¨å†Œè¡¨ WindowsHello Enabled=0
-rem     3 å…³é—­ HVCI å†…å­˜å®Œæ•´æ€§ï¼ˆæƒ…å†µä¸€ï¼‰   æ³¨å†Œè¡¨ HypervisorEnforcedCodeIntegrity Enabled=0
-rem     4 å…³é—­ Hyper-Vï¼ˆæƒ…å†µä¸‰ï¼‰          DISM + Disable-WindowsOptionalFeature
-rem     5 ä¸€é”®è‡ªåŠ¨ä¿®å¤ï¼ˆæŽ¨èï¼‰            ä¾æ¬¡æ‰§è¡Œ 1+2+3+4ï¼Œè·³è¿‡å·²ç¦ç”¨é¡¹
-rem     6 å…³é—­ DeviceGuard æ³¨å†Œè¡¨æ®‹ç•™ï¼ˆæƒ…å†µå››-c/dï¼‰
-rem     7 é‡å¯ç”µè„‘
+rem   fix-vbs.bat  ¶ÔÆë gamesafe.qq.com/article/1181.shtml
+rem   ²Ëµ¥£º
+rem     0 ÍË³ö
+rem     1 ¹Ø±Õ VBS£¨Çé¿ö¶þ£©            bcdedit /set hypervisorlaunchtype off
+rem     2 ¹Ø±Õ WindowsHello VBS£¨Çé¿öËÄ-a£© ×¢²á±í WindowsHello Enabled=0
+rem     3 ¹Ø±Õ HVCI ÄÚ´æÍêÕûÐÔ£¨Çé¿öÒ»£©   ×¢²á±í HypervisorEnforcedCodeIntegrity Enabled=0
+rem     4 ¹Ø±Õ Hyper-V£¨Çé¿öÈý£©          DISM + Disable-WindowsOptionalFeature
+rem     5 Ò»¼ü×Ô¶¯ÐÞ¸´£¨ÍÆ¼ö£©            ÒÀ´ÎÖ´ÐÐ 1+2+3+4£¬Ìø¹ýÒÑ½ûÓÃÏî
+rem     6 ¹Ø±Õ DeviceGuard ×¢²á±í²ÐÁô£¨Çé¿öËÄ-c/d£©
+rem     7 ÖØÆôµçÄÔ
 rem ============================================================
 
 set "LOG=%~dp0fix-vbs.log"
-echo ä¿®å¤æ—¥å¿— - %date% %time% > "%LOG%"
+echo ÐÞ¸´ÈÕÖ¾ - %date% %time% > "%LOG%"
 
 :chkadmin
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo.
-    echo   [æç¤º] å½“å‰ä¸æ˜¯ç®¡ç†å‘˜æƒé™ï¼Œæ­£åœ¨å°è¯•è‡ªåŠ¨ææƒ...
-    echo   è¯·åœ¨å¼¹å‡ºçš„ã€Œç”¨æˆ·è´¦æˆ·æŽ§åˆ¶ã€çª—å£ä¸­ç‚¹ã€Œæ˜¯ã€ã€‚
+    echo   [ÌáÊ¾] µ±Ç°²»ÊÇ¹ÜÀíÔ±È¨ÏÞ£¬ÕýÔÚ³¢ÊÔ×Ô¶¯ÌáÈ¨...
+    echo   ÇëÔÚµ¯³öµÄ¡¸ÓÃ»§ÕË»§¿ØÖÆ¡¹´°¿ÚÖÐµã¡¸ÊÇ¡¹¡£
     echo.
     powershell -NoProfile -Command "Start-Process -FilePath '%~f0' -Verb RunAs" >nul 2>&1
     if %errorlevel% neq 0 (
-        echo   [é”™è¯¯] è‡ªåŠ¨ææƒå¤±è´¥ã€‚è¯·å³é”®æœ¬æ–‡ä»¶ -^> ä»¥ç®¡ç†å‘˜èº«ä»½è¿è¡Œã€‚
+        echo   [´íÎó] ×Ô¶¯ÌáÈ¨Ê§°Ü¡£ÇëÓÒ¼ü±¾ÎÄ¼þ -^> ÒÔ¹ÜÀíÔ±Éí·ÝÔËÐÐ¡£
         echo.
         call :pause
     )
@@ -38,19 +38,19 @@ if %errorlevel% neq 0 (
 :menu
 cls
 echo ============================================================
-echo   ä¸‰è§’æ´²è¡ŒåŠ¨ CPU è™šæ‹ŸåŒ–ä¿®å¤å·¥å…·
-echo   å®˜æ–¹æŒ‡å¼•ï¼šhttps://gamesafe.qq.com/article/1181.shtml
+echo   Èý½ÇÖÞÐÐ¶¯ CPU ÐéÄâ»¯ÐÞ¸´¹¤¾ß
+echo   ¹Ù·½Ö¸Òý£ºhttps://gamesafe.qq.com/article/1181.shtml
 echo ------------------------------------------------------------
-echo   0. é€€å‡º
-echo   1. å…³é—­ VBSï¼ˆæƒ…å†µäºŒï¼‰                bcdedit hypervisorlaunchtype off
-echo   2. å…³é—­ WindowsHello VBSï¼ˆæƒ…å†µå››-aï¼‰  æ³¨å†Œè¡¨ WindowsHello=0
-echo   3. å…³é—­ HVCI å†…å­˜å®Œæ•´æ€§ï¼ˆæƒ…å†µä¸€ï¼‰      æ³¨å†Œè¡¨ HVCI=0
-echo   4. å…³é—­ Hyper-Vï¼ˆæƒ…å†µä¸‰ï¼‰             DISM Disable Feature
-echo   5. ä¸€é”®è‡ªåŠ¨ä¿®å¤ï¼ˆæŽ¨èï¼‰              æ‰§è¡Œ 1+2+3+4ï¼Œè·³è¿‡å·²ç¦ç”¨é¡¹
-echo   6. å…³é—­ DeviceGuard æ®‹ç•™ï¼ˆæƒ…å†µå››-c/dï¼‰ æ³¨å†Œè¡¨æ‰¹é‡å½’é›¶
-echo   7. é‡å¯ç”µè„‘
+echo   0. ÍË³ö
+echo   1. ¹Ø±Õ VBS£¨Çé¿ö¶þ£©                bcdedit hypervisorlaunchtype off
+echo   2. ¹Ø±Õ WindowsHello VBS£¨Çé¿öËÄ-a£©  ×¢²á±í WindowsHello=0
+echo   3. ¹Ø±Õ HVCI ÄÚ´æÍêÕûÐÔ£¨Çé¿öÒ»£©      ×¢²á±í HVCI=0
+echo   4. ¹Ø±Õ Hyper-V£¨Çé¿öÈý£©             DISM Disable Feature
+echo   5. Ò»¼ü×Ô¶¯ÐÞ¸´£¨ÍÆ¼ö£©              Ö´ÐÐ 1+2+3+4£¬Ìø¹ýÒÑ½ûÓÃÏî
+echo   6. ¹Ø±Õ DeviceGuard ²ÐÁô£¨Çé¿öËÄ-c/d£© ×¢²á±íÅúÁ¿¹éÁã
+echo   7. ÖØÆôµçÄÔ
 echo ============================================================
-set /p choice=è¯·è¾“å…¥é€‰é¡¹ [0-7]:
+set /p choice=ÇëÊäÈëÑ¡Ïî [0-7]:
 echo.
 
 if "%choice%"=="0" goto :end
@@ -61,98 +61,98 @@ if "%choice%"=="4" call :fix_hyperv    & goto :after
 if "%choice%"=="5" call :fix_auto      & goto :after
 if "%choice%"=="6" call :fix_dg        & goto :after
 if "%choice%"=="7" call :reboot        & goto :end
-echo æ— æ•ˆé€‰é¡¹ï¼Œè¯·é‡æ–°è¾“å…¥ã€‚
+echo ÎÞÐ§Ñ¡Ïî£¬ÇëÖØÐÂÊäÈë¡£
 timeout /t 2 >nul
 goto :menu
 
 :after
 echo.
 echo   --------------------------------------------------------
-echo   æ“ä½œå®Œæˆã€‚å¼ºçƒˆå»ºè®®æ‰§è¡Œèœå• 7 é‡å¯ç”µè„‘åŽå†æ¬¡è¿è¡Œ
-echo   diagnose-vbs.bat å¤æŸ¥çŠ¶æ€ã€‚
+echo   ²Ù×÷Íê³É¡£Ç¿ÁÒ½¨ÒéÖ´ÐÐ²Ëµ¥ 7 ÖØÆôµçÄÔºóÔÙ´ÎÔËÐÐ
+echo   diagnose-vbs.bat ¸´²é×´Ì¬¡£
 echo   --------------------------------------------------------
 echo.
 call :pause
 goto :menu
 
-rem ============== å­ä¾‹ç¨‹ ==============
+rem ============== ×ÓÀý³Ì ==============
 
-rem -- ä¸ä¼šå›  redirected stdin è€Œé—ªé€€çš„æš‚åœ
+rem -- ²»»áÒò redirected stdin ¶øÉÁÍËµÄÔÝÍ£
 :pause
-set /p "_=æŒ‰å›žè½¦ç»§ç»­..."
+set /p "_=°´»Ø³µ¼ÌÐø..."
 goto :eof
 
 :fix_vbs
-echo [æƒ…å†µäºŒ] å…³é—­ VBSï¼ˆbcdedit /set hypervisorlaunchtype offï¼‰...
-echo [æƒ…å†µäºŒ] å…³é—­ VBSï¼ˆbcdedit hypervisorlaunchtype offï¼‰ >> "%LOG%"
+echo [Çé¿ö¶þ] ¹Ø±Õ VBS£¨bcdedit /set hypervisorlaunchtype off£©...
+echo [Çé¿ö¶þ] ¹Ø±Õ VBS£¨bcdedit hypervisorlaunchtype off£© >> "%LOG%"
 bcdedit /set hypervisorlaunchtype off >> "%LOG%" 2>&1
-if %errorlevel% equ 0 ( echo       æˆåŠŸã€‚ & echo       æˆåŠŸã€‚ >> "%LOG%" ) else ( echo       å¤±è´¥ï¼Œerrorlevel=%errorlevel% & echo       å¤±è´¥ errorlevel=%errorlevel% >> "%LOG%" )
+if %errorlevel% equ 0 ( echo       ³É¹¦¡£ & echo       ³É¹¦¡£ >> "%LOG%" ) else ( echo       Ê§°Ü£¬errorlevel=%errorlevel% & echo       Ê§°Ü errorlevel=%errorlevel% >> "%LOG%" )
 goto :eof
 
 :fix_hello
-echo [æƒ…å†µå››-a] å…³é—­ WindowsHello VBSï¼ˆæ³¨å†Œè¡¨ WindowsHello Enabled=0ï¼‰...
-echo [æƒ…å†µå››-a] å…³é—­ WindowsHello VBS >> "%LOG%"
+echo [Çé¿öËÄ-a] ¹Ø±Õ WindowsHello VBS£¨×¢²á±í WindowsHello Enabled=0£©...
+echo [Çé¿öËÄ-a] ¹Ø±Õ WindowsHello VBS >> "%LOG%"
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\WindowsHello" /v Enabled /t REG_DWORD /d 0 /f >> "%LOG%" 2>&1
-if %errorlevel% equ 0 ( echo       æˆåŠŸã€‚ & echo       æˆåŠŸã€‚ >> "%LOG%" ) else ( echo       å¤±è´¥ï¼Œerrorlevel=%errorlevel% & echo       å¤±è´¥ >> "%LOG%" )
-echo       æç¤ºï¼šè‹¥ä»æ— æ³•å…³é—­ Hyper-Vï¼Œè¯·å…ˆåœ¨ã€Œè®¾ç½® -> è´¦æˆ· -> ç™»å½•ã€ä¸­å…³é—­é¢éƒ¨/æŒ‡çº¹è¯†åˆ«å¹¶åˆ é™¤ PINã€‚
+if %errorlevel% equ 0 ( echo       ³É¹¦¡£ & echo       ³É¹¦¡£ >> "%LOG%" ) else ( echo       Ê§°Ü£¬errorlevel=%errorlevel% & echo       Ê§°Ü >> "%LOG%" )
+echo       ÌáÊ¾£ºÈôÈÔÎÞ·¨¹Ø±Õ Hyper-V£¬ÇëÏÈÔÚ¡¸ÉèÖÃ -> ÕË»§ -> µÇÂ¼¡¹ÖÐ¹Ø±ÕÃæ²¿/Ö¸ÎÆÊ¶±ð²¢É¾³ý PIN¡£
 goto :eof
 
 :fix_hvci
-echo [æƒ…å†µä¸€] å…³é—­ HVCI å†…å­˜å®Œæ•´æ€§ï¼ˆæ³¨å†Œè¡¨ HypervisorEnforcedCodeIntegrity Enabled=0ï¼‰...
-echo [æƒ…å†µä¸€] å…³é—­ HVCI å†…å­˜å®Œæ•´æ€§ >> "%LOG%"
+echo [Çé¿öÒ»] ¹Ø±Õ HVCI ÄÚ´æÍêÕûÐÔ£¨×¢²á±í HypervisorEnforcedCodeIntegrity Enabled=0£©...
+echo [Çé¿öÒ»] ¹Ø±Õ HVCI ÄÚ´æÍêÕûÐÔ >> "%LOG%"
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity" /v Enabled /t REG_DWORD /d 0 /f >> "%LOG%" 2>&1
-if %errorlevel% equ 0 ( echo       æˆåŠŸã€‚ & echo       æˆåŠŸã€‚ >> "%LOG%" ) else ( echo       å¤±è´¥ï¼Œerrorlevel=%errorlevel% & echo       å¤±è´¥ >> "%LOG%" )
-echo       ä¹Ÿå¯åœ¨ã€ŒWindows å®‰å…¨ä¸­å¿ƒ -> è®¾å¤‡å®‰å…¨æ€§ -> å†…æ ¸éš”ç¦»è¯¦ç»†ä¿¡æ¯ -> å…³é—­å†…å­˜å®Œæ•´æ€§ã€æ‰‹åŠ¨æ“ä½œã€‚
+if %errorlevel% equ 0 ( echo       ³É¹¦¡£ & echo       ³É¹¦¡£ >> "%LOG%" ) else ( echo       Ê§°Ü£¬errorlevel=%errorlevel% & echo       Ê§°Ü >> "%LOG%" )
+echo       Ò²¿ÉÔÚ¡¸Windows °²È«ÖÐÐÄ -> Éè±¸°²È«ÐÔ -> ÄÚºË¸ôÀëÏêÏ¸ÐÅÏ¢ -> ¹Ø±ÕÄÚ´æÍêÕûÐÔ¡¹ÊÖ¶¯²Ù×÷¡£
 goto :eof
 
 :fix_hyperv
-echo [æƒ…å†µä¸‰] å…³é—­ Hyper-Vï¼ˆDISM + PowerShell Disable-WindowsOptionalFeatureï¼‰...
-echo [æƒ…å†µä¸‰] å…³é—­ Hyper-V >> "%LOG%"
-powershell -NoProfile -Command "Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -match 'Hyper-V|VirtualMachinePlatform|HypervisorPlatform' -and $_.State -eq 'Enabled' } | ForEach-Object { Write-Output ('ç¦ç”¨: ' + $_.FeatureName); Disable-WindowsOptionalFeature -Online -FeatureName $_.FeatureName -NoRestart -ErrorAction SilentlyContinue | Out-Null }; Write-Output 'PowerShell éƒ¨åˆ†å®Œæˆ'" >> "%LOG%" 2>&1
+echo [Çé¿öÈý] ¹Ø±Õ Hyper-V£¨DISM + PowerShell Disable-WindowsOptionalFeature£©...
+echo [Çé¿öÈý] ¹Ø±Õ Hyper-V >> "%LOG%"
+powershell -NoProfile -Command "Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -match 'Hyper-V|VirtualMachinePlatform|HypervisorPlatform' -and $_.State -eq 'Enabled' } | ForEach-Object { Write-Output ('½ûÓÃ: ' + $_.FeatureName); Disable-WindowsOptionalFeature -Online -FeatureName $_.FeatureName -NoRestart -ErrorAction SilentlyContinue | Out-Null }; Write-Output 'PowerShell ²¿·ÖÍê³É'" >> "%LOG%" 2>&1
 dism /online /disable-feature /featurename:Microsoft-Hyper-V-All /quiet /norestart >> "%LOG%" 2>&1
-echo       DISM å®Œæˆï¼ˆå¦‚æœ¬æœºæœªå¯ç”¨ Hyper-V åˆ™æ— å½±å“ï¼‰ã€‚
+echo       DISM Íê³É£¨Èç±¾»úÎ´ÆôÓÃ Hyper-V ÔòÎÞÓ°Ïì£©¡£
 goto :eof
 
 :fix_auto
-echo [ä¸€é”®è‡ªåŠ¨ä¿®å¤] æ£€æµ‹å½“å‰çŠ¶æ€å¹¶ä¾æ¬¡æ‰§è¡Œ 1+2+3+4...
-echo [ä¸€é”®è‡ªåŠ¨ä¿®å¤] å¼€å§‹ >> "%LOG%"
+echo [Ò»¼ü×Ô¶¯ÐÞ¸´] ¼ì²âµ±Ç°×´Ì¬²¢ÒÀ´ÎÖ´ÐÐ 1+2+3+4...
+echo [Ò»¼ü×Ô¶¯ÐÞ¸´] ¿ªÊ¼ >> "%LOG%"
 rem --- VBS ---
 powershell -NoProfile -Command "$d = Get-CimInstance -Namespace root\Microsoft\Windows\DeviceGuard -ClassName Win32_DeviceGuard -ErrorAction SilentlyContinue; if ($d.VirtualizationBasedSecurityStatus -ne 0) { 'VBS_OCCUPIED' } else { 'VBS_OK' }" > "%TEMP%\vbschk.txt" 2>&1
 findstr /c:"VBS_OCCUPIED" "%TEMP%\vbschk.txt" >nul
-if %errorlevel% equ 0 ( call :fix_vbs ) else ( echo [è·³è¿‡] VBS å·²æ˜¯å…³é—­çŠ¶æ€ã€‚ )
+if %errorlevel% equ 0 ( call :fix_vbs ) else ( echo [Ìø¹ý] VBS ÒÑÊÇ¹Ø±Õ×´Ì¬¡£ )
 rem --- WindowsHello ---
 powershell -NoProfile -Command "$v = (Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\WindowsHello' -ErrorAction SilentlyContinue).Enabled; if ($v -ne 0) { 'HELLO_ON' } else { 'HELLO_OK' }" > "%TEMP%\hellochk.txt" 2>&1
 findstr /c:"HELLO_ON" "%TEMP%\hellochk.txt" >nul
-if %errorlevel% equ 0 ( call :fix_hello ) else ( echo [è·³è¿‡] WindowsHello å·²å…³é—­ã€‚ )
+if %errorlevel% equ 0 ( call :fix_hello ) else ( echo [Ìø¹ý] WindowsHello ÒÑ¹Ø±Õ¡£ )
 rem --- HVCI ---
 powershell -NoProfile -Command "$v = (Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity' -ErrorAction SilentlyContinue).Enabled; if ($v -ne 0) { 'HVCI_ON' } else { 'HVCI_OK' }" > "%TEMP%\hvcichk.txt" 2>&1
 findstr /c:"HVCI_ON" "%TEMP%\hvcichk.txt" >nul
-if %errorlevel% equ 0 ( call :fix_hvci ) else ( echo [è·³è¿‡] HVCI å·²å…³é—­ã€‚ )
+if %errorlevel% equ 0 ( call :fix_hvci ) else ( echo [Ìø¹ý] HVCI ÒÑ¹Ø±Õ¡£ )
 rem --- Hyper-V ---
 powershell -NoProfile -Command "$f = Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -match 'Hyper-V|VirtualMachinePlatform|HypervisorPlatform' -and $_.State -eq 'Enabled' }; if ($f) { 'HYPERV_ON' } else { 'HYPERV_OK' }" > "%TEMP%\hypervchk.txt" 2>&1
 findstr /c:"HYPERV_ON" "%TEMP%\hypervchk.txt" >nul
-if %errorlevel% equ 0 ( call :fix_hyperv ) else ( echo [è·³è¿‡] Hyper-V ç­‰å·²ç¦ç”¨ã€‚ )
+if %errorlevel% equ 0 ( call :fix_hyperv ) else ( echo [Ìø¹ý] Hyper-V µÈÒÑ½ûÓÃ¡£ )
 call :fix_dg
-echo [ä¸€é”®è‡ªåŠ¨ä¿®å¤] å®Œæˆ >> "%LOG%"
+echo [Ò»¼ü×Ô¶¯ÐÞ¸´] Íê³É >> "%LOG%"
 del /q "%TEMP%\vbschk.txt" "%TEMP%\hellochk.txt" "%TEMP%\hvcichk.txt" "%TEMP%\hypervchk.txt" 2>nul
 goto :eof
 
 :fix_dg
-echo [æƒ…å†µå››-c/d] å…³é—­ DeviceGuard æ³¨å†Œè¡¨æ®‹ç•™...
-echo [æƒ…å†µå››-c/d] DeviceGuard æ®‹ç•™å½’é›¶ >> "%LOG%"
+echo [Çé¿öËÄ-c/d] ¹Ø±Õ DeviceGuard ×¢²á±í²ÐÁô...
+echo [Çé¿öËÄ-c/d] DeviceGuard ²ÐÁô¹éÁã >> "%LOG%"
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard" /v EnableVirtualizationBasedSecurity /t REG_DWORD /d 0 /f >> "%LOG%" 2>&1
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard" /v LsaCfgFlags /t REG_DWORD /d 0 /f >> "%LOG%" 2>&1
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity" /v Enabled /t REG_DWORD /d 0 /f >> "%LOG%" 2>&1
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\SystemGuard" /v Enabled /t REG_DWORD /d 0 /f >> "%LOG%" 2>&1
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\CredentialGuard" /v Enabled /t REG_DWORD /d 0 /f >> "%LOG%" 2>&1
-echo       DeviceGuard ç›¸å…³æ³¨å†Œè¡¨å·²æ‰¹é‡å½’é›¶ã€‚
-echo       ç»„ç­–ç•¥è·¯å¾„ã€Œè®¡ç®—æœºé…ç½® -> ç®¡ç†æ¨¡æ¿ -> ç³»ç»Ÿ -> Device Guard -> åŸºäºŽè™šæ‹ŸåŒ–çš„å®‰å…¨ -> å·²ç¦ç”¨ã€ä¹Ÿç­‰æ•ˆã€‚
+echo       DeviceGuard Ïà¹Ø×¢²á±íÒÑÅúÁ¿¹éÁã¡£
+echo       ×é²ßÂÔÂ·¾¶¡¸¼ÆËã»úÅäÖÃ -> ¹ÜÀíÄ£°å -> ÏµÍ³ -> Device Guard -> »ùÓÚÐéÄâ»¯µÄ°²È« -> ÒÑ½ûÓÃ¡¹Ò²µÈÐ§¡£
 goto :eof
 
 :reboot
-echo å³å°†é‡å¯ç”µè„‘ä»¥ä½¿ä¿®æ”¹ç”Ÿæ•ˆ...
-set /p ans=ç¡®è®¤é‡å¯ï¼Ÿ(Y/N):
-if /i "%ans%"=="Y" shutdown /r /t 5 /c "CPU è™šæ‹ŸåŒ–ä¿®å¤å®Œæˆï¼Œ5 ç§’åŽé‡å¯"
+echo ¼´½«ÖØÆôµçÄÔÒÔÊ¹ÐÞ¸ÄÉúÐ§...
+set /p ans=È·ÈÏÖØÆô£¿(Y/N):
+if /i "%ans%"=="Y" shutdown /r /t 5 /c "CPU ÐéÄâ»¯ÐÞ¸´Íê³É£¬5 ÃëºóÖØÆô"
 goto :eof
 
 :end
