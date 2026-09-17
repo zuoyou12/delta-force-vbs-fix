@@ -1,8 +1,38 @@
-# 三角洲行动 CPU 虚拟化修复工具包
+<p align="center">
+  <img src="docs/assets/banner.jpg" alt="Delta Force VBS Fix Toolkit" width="100%">
+</p>
 
-> 解决三角洲行动（Delta Force）国服「未开启或有其他软件占用 CPU 虚拟化功能」弹框问题，对齐腾讯游戏安全团队官方指引 [gamesafe.qq.com/article/1181.shtml](https://gamesafe.qq.com/article/1181.shtml)。
+<h1 align="center">三角洲行动 CPU 虚拟化修复工具包</h1>
+
+<p align="center">
+  解决三角洲行动（Delta Force）国服「未开启或有其他软件占用 CPU 虚拟化功能」弹框问题<br>
+  对齐腾讯游戏安全团队官方指引 <a href="https://gamesafe.qq.com/article/1181.shtml">gamesafe.qq.com/article/1181.shtml</a>
+</p>
+
+<p align="center">
+  <a href="https://zuoyou12.github.io/delta-force-vbs-fix/"><img src="https://img.shields.io/badge/🧭_在线诊断向导-zuoyou12.github.io%2Fdelta--force--vbs--fix-f59e0b?style=for-the-badge" alt="在线诊断向导"></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/platform-Windows%2010%2F11-0078d4?style=flat-square&logo=windows&logoColor=white" alt="Platform">
+  <img src="https://img.shields.io/badge/license-MIT-10b981?style=flat-square" alt="License">
+  <img src="https://img.shields.io/badge/lang-批处理%20BAT-f59e0b?style=flat-square" alt="Batch">
+  <img src="https://img.shields.io/github/stars/zuoyou12/delta-force-vbs-fix?style=flat-square" alt="Stars">
+</p>
+
+---
 
 很多玩家 BIOS 里明明已经开启了 VT-X/SVM，但游戏里依然弹「未开启 CPU 虚拟化」的提示。这个工具包就是把官方 4 种弹框情况对应到一组批处理脚本，让普通玩家一键诊断与修复，而不必在 BIOS、注册表、组策略、Windows 功能里逐项翻找。
+
+## 🖥️ 在线诊断页
+
+不想先看文档？打开交互式诊断向导，回答 3 个问题就能拿到你该运行的脚本菜单编号：
+
+👉 **<https://zuoyou12.github.io/delta-force-vbs-fix/>**
+
+<p align="center">
+  <a href="https://zuoyou12.github.io/delta-force-vbs-fix/"><img src="docs/assets/screenshot.jpg" alt="在线诊断页截图" width="80%"></a>
+</p>
 
 ## 快速开始
 
@@ -134,7 +164,8 @@ A: 重启电脑使修改生效。重启后建议运行 `diagnose-vbs.bat` 复查
 ├── LICENSE              # MIT
 ├── .gitignore
 └── docs/
-    └── index.html       # 交互式 HTML 诊断页（GitHub Pages 托管）
+    ├── index.html       # 交互式 HTML 诊断页（GitHub Pages 托管）
+    └── assets/          # README 用图（banner / 截图）
 ```
 
 ## 许可
