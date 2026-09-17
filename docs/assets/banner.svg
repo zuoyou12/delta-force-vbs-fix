@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400">
+  <!-- 纸 -->
+  <rect width="1200" height="400" fill="#fbfbf6"/>
+  <!-- 分栏线 -->
+  <g stroke="#171714" stroke-opacity=".07">
+    <line x1="150" y1="0" x2="150" y2="400"/>
+    <line x1="380" y1="0" x2="380" y2="400"/>
+    <line x1="610" y1="0" x2="610" y2="400"/>
+    <line x1="840" y1="0" x2="840" y2="400"/>
+    <line x1="1070" y1="0" x2="1070" y2="400"/>
+  </g>
+
+  <!-- 手绘 Δ 主标识（轻微不规则双线） -->
+  <g transform="translate(470,58)">
+    <path d="M130 10 L252 232 L8 232 Z" fill="none" stroke="#171714" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M132 22 L244 226 L20 226 Z" fill="none" stroke="#171714" stroke-width="2.5" stroke-opacity=".35" stroke-linejoin="round"/>
+    <path d="M130 74 L196 200 L64 200 Z" fill="#ffd23e"/>
+    <path d="M130 74 L196 200 L64 200 Z" fill="none" stroke="#171714" stroke-width="4" stroke-linejoin="round"/>
+  </g>
+  <!-- 黄色胶带 -->
+  <rect x="556" y="44" width="110" height="30" fill="#ffd23e" opacity=".85" transform="rotate(-3 611 59)"/>
+  <rect x="556" y="44" width="110" height="30" fill="none" stroke="#171714" stroke-opacity=".25" stroke-dasharray="4 4" transform="rotate(-3 611 59)"/>
+
+  <!-- 标题 -->
+  <text x="600" y="330" text-anchor="middle" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="44" font-weight="900" fill="#171714" letter-spacing="4">三角洲行动 CPU 虚拟化修复工具包</text>
+  <text x="600" y="370" text-anchor="middle" font-family="monospace" font-size="17" fill="#55554e" letter-spacing="6">Δ DELTA FORCE · VBS FIX · 2026</text>
+
+  <!-- 左侧贴纸：红叉 VBS -->
+  <g transform="translate(150,120) rotate(-6)">
+    <rect x="0" y="0" width="150" height="130" fill="#ffffff" stroke="#171714" stroke-width="3"/>
+    <rect x="45" y="-14" width="60" height="20" fill="#ff5252" opacity=".85" transform="rotate(-2 75 -4)"/>
+    <text x="75" y="72" text-anchor="middle" font-family="monospace" font-size="26" font-weight="700" fill="#171714">VBS</text>
+    <line x1="30" y1="96" x2="120" y2="34" stroke="#ff5252" stroke-width="8" stroke-linecap="round"/>
+    <path d="M150 0 L132 0 L150 18 Z" fill="#d9d9cd" stroke="#171714" stroke-width="2"/>
+  </g>
+  <!-- 右侧贴纸：绿勾 -->
+  <g transform="translate(900,150) rotate(5)">
+    <rect x="0" y="0" width="150" height="130" fill="#ffffff" stroke="#171714" stroke-width="3"/>
+    <rect x="45" y="-14" width="60" height="20" fill="#4a7bff" opacity=".85" transform="rotate(3 75 -4)"/>
+    <path d="M38 68 L66 96 L116 36" fill="none" stroke="#2fbf71" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M150 0 L132 0 L150 18 Z" fill="#d9d9cd" stroke="#171714" stroke-width="2"/>
+  </g>
+</svg>
