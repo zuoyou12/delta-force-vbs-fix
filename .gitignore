@@ -1,0 +1,25 @@
+# Windows 临时文件
+*.log
+Thumbs.db
+desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+
+# 编辑器
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.pyc
+
+# 备份
+*.bak
+*.tmp
