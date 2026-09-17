@@ -1,808 +1,810 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="dark">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>三角洲行动 CPU 虚拟化问题修复向导</title>
-<meta name="description" content="解决三角洲行动国服『未开启或有其他软件占用 CPU 虚拟化功能』弹框问题，对齐腾讯游戏安全团队官方指引。">
+<title>三角洲行动 CPU 虚拟化修复向导 — Δ VBS-FIX</title>
+<meta name="description" content="白纸手绘风的三角洲行动国服 CPU 虚拟化弹框修复向导：3 步诊断，对照腾讯游戏安全官方指引给出对应修复脚本。">
 <style>
-  :root {
-    --bg: #18181b;
-    --bg-elev: #1f1f23;
-    --card: #27272a;
-    --card-fg: #fafafa;
-    --fg: #e4e4e7;
-    --muted: #a1a1aa;
-    --muted-fg: #71717a;
-    --border: #3f3f46;
-    --border-strong: #52525b;
-    --accent: #f59e0b;
-    --accent-fg: #18181b;
-    --danger: #ef4444;
-    --success: #10b981;
-    --info: #3b82f6;
-    --radius: 8px;
-    --radius-sm: 4px;
-    --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
-    --serif: ui-serif, Georgia, "Times New Roman", "Songti SC", serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-  body {
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--fg);
-    line-height: 1.6;
-    font-size: 16px;
-    min-height: 100vh;
-  }
-  .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
-  a { color: var(--accent); text-decoration: none; }
-  a:hover { text-decoration: underline; }
+/* ============ 纸与墨 ============ */
+:root{
+  --paper:#fbfbf6;
+  --ink:#171714;
+  --ink-soft:#55554e;
+  --ink-faint:#8b8b82;
+  --line:rgba(23,23,20,.08);
+  --red:#ff5252;
+  --yellow:#ffd23e;
+  --blue:#4a7bff;
+  --green:#2fbf71;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:"PingFang SC","Microsoft YaHei",-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:auto}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:16px;line-height:1.7;
+  overflow-x:hidden;
+  cursor:none;
+}
+@media (pointer:coarse){body{cursor:auto}}
+::selection{background:var(--yellow);color:var(--ink)}
+a{color:inherit}
+button{font-family:inherit;cursor:none}
+@media (pointer:coarse){button{cursor:pointer}}
 
-  /* Hero */
-  .hero {
-    padding: 64px 0 48px;
-    border-bottom: 1px solid var(--border);
-    background:
-      radial-gradient(900px 280px at 100% 0%, rgba(245,158,11,0.06), transparent 60%),
-      var(--bg);
-  }
-  .hero .container { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 32px; align-items: end; }
-  .hero h1 {
-    font-family: var(--serif);
-    font-weight: 600;
-    font-size: clamp(28px, 4vw, 44px);
-    line-height: 1.15;
-    letter-spacing: -0.01em;
-  }
-  .hero h1 .accent { color: var(--accent); font-style: italic; }
-  .hero p { color: var(--muted); margin-top: 16px; max-width: 56ch; font-size: 16px; }
-  .hero .badge {
-    display: inline-block;
-    padding: 4px 10px;
-    background: rgba(245,158,11,0.12);
-    color: var(--accent);
-    border: 1px solid rgba(245,158,11,0.3);
-    border-radius: var(--radius-sm);
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-bottom: 18px;
-  }
-  .hero .cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
-    background: var(--accent);
-    color: var(--accent-fg);
-    border-radius: var(--radius-sm);
-    font-weight: 600;
-    font-size: 14px;
-    border: 1px solid var(--accent);
-    transition: transform .12s ease, background .12s;
-  }
-  .hero .cta:hover { background: #fbbf24; text-decoration: none; transform: translateY(-1px); }
-  .hero .meta { font-family: var(--mono); font-size: 12px; color: var(--muted-fg); }
+/* 竖向分栏线 */
+.rails{position:fixed;inset:0;pointer-events:none;z-index:1;display:flex;justify-content:space-between;padding:0 6vw}
+.rails i{width:1px;background:var(--line)}
+@media(max-width:768px){.rails i:nth-child(n+4){display:none}}
 
-  /* Section */
-  section { padding: 56px 0; border-bottom: 1px solid var(--border); }
-  section h2 {
-    font-family: var(--serif);
-    font-weight: 600;
-    font-size: 24px;
-    letter-spacing: -0.01em;
-    margin-bottom: 8px;
-  }
-  section .lead { color: var(--muted); max-width: 70ch; margin-bottom: 28px; font-size: 15px; }
-  .step-num {
-    display: inline-block;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--accent);
-    background: rgba(245,158,11,0.1);
-    padding: 2px 8px;
-    border-radius: 3px;
-    margin-bottom: 6px;
-    letter-spacing: 0.08em;
-  }
+/* ============ 预加载 ============ */
+#preloader{
+  position:fixed;inset:0;z-index:200;background:var(--paper);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;
+  transition:filter .7s ease,opacity .7s ease;
+}
+#preloader.done{filter:blur(18px);opacity:0;pointer-events:none}
+#preloader .delta-draw{width:130px;height:120px}
+#preloader .delta-draw path{
+  fill:none;stroke:var(--ink);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:600;stroke-dashoffset:600;
+  animation:draw 1.4s ease forwards;
+}
+#preloader .delta-draw .fill-tri{
+  fill:var(--yellow);stroke:none;opacity:0;
+  animation:fillin .5s ease 1.2s forwards;
+}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes fillin{to{opacity:.9}}
+#pl-spin{
+  position:absolute;width:220px;height:220px;opacity:0;
+  animation:spin-in .4s ease forwards,spin 9s linear infinite;
+  animation-delay:0s,0s;
+}
+@keyframes spin-in{to{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+#pl-spin text{font-family:var(--mono);font-size:11px;letter-spacing:.35em;fill:var(--ink-soft)}
+#pl-bar{width:200px;height:3px;background:var(--line);position:relative}
+#pl-bar i{position:absolute;inset:0;transform-origin:left;background:var(--ink);transform:scaleX(0);transition:transform .25s ease}
+#pl-num{font-family:var(--mono);font-size:12px;color:var(--ink-faint);letter-spacing:.2em}
 
-  /* Card */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px 22px;
-  }
-  .card h3 { font-family: var(--serif); font-weight: 600; font-size: 17px; margin-bottom: 6px; }
-  .card .desc { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
-  .card .desc strong { color: var(--fg); font-weight: 600; }
+/* ============ 自定义光标 ============ */
+#cursor-dot,#cursor-ring{position:fixed;top:0;left:0;pointer-events:none;z-index:300;border-radius:50%}
+#cursor-dot{width:6px;height:6px;background:var(--ink);transform:translate(-50%,-50%)}
+#cursor-ring{width:34px;height:34px;border:1.5px solid var(--ink);transform:translate(-50%,-50%);transition:width .18s,height .18s,background .18s,opacity .18s}
+body.cur-point #cursor-ring{width:48px;height:48px;background:rgba(255,210,62,.25)}
+body.cur-grab #cursor-ring{width:22px;height:22px;background:var(--ink)}
+body.cur-grab #cursor-dot{opacity:0}
+body.no-cursor #cursor-dot,body.no-cursor #cursor-ring{display:none}
+@media (pointer:coarse){#cursor-dot,#cursor-ring{display:none}}
+#coords{
+  position:fixed;right:18px;bottom:16px;z-index:210;
+  font-family:var(--mono);font-size:11px;color:var(--ink-faint);letter-spacing:.15em;
+  background:var(--paper);padding:2px 8px;border:1px solid var(--line);
+}
 
-  /* Problem callout */
-  .callout {
-    background: linear-gradient(180deg, var(--bg-elev), var(--card));
-    border-left: 3px solid var(--accent);
-    padding: 20px 24px;
-    border-radius: 0 var(--radius) var(--radius) 0;
-    margin-bottom: 24px;
-  }
-  .callout p { font-size: 15px; color: var(--fg); }
-  .callout .quote { color: var(--muted); font-style: italic; font-family: var(--serif); margin-top: 8px; font-size: 14px; }
+/* ============ 导航 ============ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:16px 6vw;background:var(--paper);border-bottom:2px solid var(--ink);
+}
+.brand{font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:.08em;text-decoration:none;display:flex;align-items:center;gap:8px}
+.brand svg{width:22px;height:20px}
+nav .links{display:flex;gap:26px}
+nav .links a{
+  font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-decoration:none;
+  position:relative;padding:2px 0;
+}
+nav .links a::after{
+  content:"";position:absolute;left:0;bottom:-2px;height:2px;width:0;background:var(--red);transition:width .2s;
+}
+nav .links a:hover::after{width:100%}
+@media(max-width:768px){nav .links{gap:14px}nav .links a{font-size:11px;letter-spacing:.08em}}
 
-  /* Wizard */
-  .wizard {
-    background: var(--bg-elev);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-  }
-  .wizard-progress { display: flex; gap: 8px; margin-bottom: 24px; }
-  .wizard-progress .pip {
-    flex: 1; height: 3px; background: var(--border); border-radius: 2px; transition: background .2s;
-  }
-  .wizard-progress .pip.active { background: var(--accent); }
-  .wizard-progress .pip.done { background: var(--success); }
-  .step { display: none; }
-  .step.active { display: block; animation: fadein .25s ease-out; }
-  @keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-  .step h3 { font-family: var(--serif); font-size: 19px; margin-bottom: 8px; }
-  .step .hint { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+/* ============ 通用版面 ============ */
+section{position:relative;z-index:2;padding:120px 6vw}
+.tag{
+  display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.3em;
+  color:var(--ink-soft);border:1.5px solid var(--ink);padding:4px 12px;margin-bottom:22px;
+  background:var(--paper);transform:rotate(-1.5deg);
+}
+h2{
+  font-size:clamp(30px,5vw,58px);font-weight:900;line-height:1.15;letter-spacing:-.01em;
+  margin-bottom:14px;position:relative;display:inline-block;
+}
+h2 .squiggle{display:block;width:70%;height:12px;margin-top:2px}
+.lead{color:var(--ink-soft);max-width:62ch;font-size:15px;margin-bottom:44px}
+code.k{font-family:var(--mono);font-size:.88em;background:#f1f1e8;border:1px solid var(--line);padding:1px 6px}
+.reveal{opacity:0;transform:translateY(26px)}
+.no-motion .reveal{opacity:1;transform:none}
 
-  /* Choice list (radios) */
-  .choices { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
-  .choice {
-    display: flex; align-items: flex-start; gap: 12px;
-    padding: 14px 16px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: border .12s, background .12s;
-  }
-  .choice:hover { border-color: var(--border-strong); background: #2d2d33; }
-  .choice.selected { border-color: var(--accent); background: rgba(245,158,11,0.06); }
-  .choice input { margin-top: 3px; accent-color: var(--accent); transform: scale(1.15); }
-  .choice .label { font-weight: 500; font-size: 15px; }
-  .choice .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+/* ============ 首屏 ============ */
+#hero{
+  min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+  padding-top:140px;position:relative;
+}
+#hero h1{
+  font-size:clamp(44px,9vw,120px);font-weight:900;line-height:1.04;letter-spacing:-.02em;
+}
+#hero h1 .row{display:block;overflow:hidden}
+#hero h1 .row span{display:inline-block}
+#hero h1 .hl{position:relative;white-space:nowrap}
+#hero h1 .hl::after{
+  content:"";position:absolute;left:-2%;bottom:8%;width:104%;height:26%;background:var(--yellow);z-index:-1;transform:rotate(-1deg);
+}
+#hero .sub{
+  margin-top:28px;font-family:var(--mono);font-size:13px;color:var(--ink-soft);
+  max-width:52ch;letter-spacing:.04em;
+}
+#hero .cta-row{display:flex;gap:16px;margin-top:36px;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.06em;
+  padding:12px 22px;border:2px solid var(--ink);background:var(--paper);color:var(--ink);
+  text-decoration:none;box-shadow:4px 4px 0 var(--ink);transition:transform .12s,box-shadow .12s;
+}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
+.btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+.btn.primary{background:var(--yellow)}
+.btn.blue{background:var(--blue);color:#fff}
+#three-wrap{
+  position:absolute;right:4vw;top:50%;transform:translateY(-50%);
+  width:min(38vw,420px);height:min(38vw,420px);z-index:-1;pointer-events:none;
+}
+@media(max-width:900px){#three-wrap{opacity:.35;right:-10vw}}
 
-  /* Checkbox list */
-  .checks { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
-  .check {
-    display: flex; align-items: flex-start; gap: 12px;
-    padding: 14px 16px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-  }
-  .check input { margin-top: 3px; accent-color: var(--accent); transform: scale(1.15); }
-  .check .label { font-weight: 500; font-size: 15px; }
-  .check .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+/* 可拖拽 Δ 贴纸 */
+.sticker{
+  position:absolute;width:120px;height:112px;z-index:5;touch-action:none;
+  filter:drop-shadow(3px 4px 0 rgba(23,23,20,.18));
+}
+.sticker .paper{position:absolute;inset:0;background:#fff;border:2px solid var(--ink)}
+.sticker .gloss{
+  position:absolute;width:34px;height:34px;border-radius:50%;
+  background:#fff;filter:blur(6px);opacity:.7;pointer-events:none;
+}
+.sticker .fold{
+  position:absolute;right:-2px;top:-2px;width:0;height:0;
+  border-left:16px solid transparent;border-bottom:16px solid var(--paper);
+  border-top:16px solid var(--ink);z-index:2;
+}
+.sticker .fold::after{
+  content:"";position:absolute;top:2px;left:-16px;width:0;height:0;
+  border-left:13px solid transparent;border-top:13px solid #d9d9cd;
+}
+#sticker-hero{right:12vw;top:24vh}
+@media(max-width:900px){#sticker-hero{right:6vw;top:16vh;width:88px;height:82px}}
 
-  /* Buttons */
-  .btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 10px 18px;
-    background: var(--card);
-    color: var(--fg);
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-sm);
-    font-family: var(--sans);
-    font-weight: 500;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all .12s;
-  }
-  .btn:hover { background: #2d2d33; border-color: var(--muted-fg); }
-  .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 600; }
-  .btn.primary:hover { background: #fbbf24; }
-  .btn.ghost { background: transparent; border-color: var(--border); color: var(--muted); }
-  .btn.ghost:hover { color: var(--fg); background: var(--card); }
-  .btn-row { display: flex; gap: 10px; justify-content: flex-end; }
+/* ============ 向导 ============ */
+#wizard .panel{
+  border:2px solid var(--ink);background:#fff;padding:34px;position:relative;
+  box-shadow:6px 6px 0 var(--ink);
+}
+#wizard .tape{
+  position:absolute;top:-14px;left:50%;transform:translateX(-50%) rotate(-2deg);
+  width:120px;height:28px;background:rgba(255,210,62,.85);
+  border-left:1px dashed rgba(23,23,20,.3);border-right:1px dashed rgba(23,23,20,.3);
+}
+.steps-bar{display:flex;gap:10px;margin-bottom:28px}
+.steps-bar i{flex:1;height:4px;background:var(--line);position:relative}
+.steps-bar i.on{background:var(--ink)}
+.steps-bar i.done{background:var(--green)}
+.wstep{display:none}
+.wstep.active{display:block;animation:fadeup .3s ease}
+@keyframes fadeup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.wstep h3{font-size:22px;font-weight:900;margin-bottom:6px}
+.wstep .hint{font-family:var(--mono);font-size:12px;color:var(--ink-faint);margin-bottom:24px;letter-spacing:.06em}
+.choices{display:flex;flex-direction:column;gap:12px;margin-bottom:28px}
+.choice{
+  display:flex;gap:14px;align-items:flex-start;padding:16px 18px;
+  border:2px solid var(--ink);background:var(--paper);transition:background .12s,transform .12s;
+  user-select:none;
+}
+.choice:hover{background:#f4f4ea;transform:translate(-1px,-1px)}
+.choice.sel{background:var(--yellow)}
+.choice input{margin-top:4px;accent-color:var(--ink);width:16px;height:16px}
+.choice .t{font-weight:700;font-size:15px}
+.choice .d{font-family:var(--mono);font-size:12px;color:var(--ink-soft)}
+.wrow{display:flex;justify-content:space-between;gap:12px}
+.result{
+  border:2px solid var(--ink);background:#fff;padding:16px 18px;margin-bottom:12px;
+  border-left:10px solid var(--yellow);
+}
+.result.r{border-left-color:var(--red)} .result.b{border-left-color:var(--blue)} .result.g{border-left-color:var(--green)}
+.result .t{font-weight:800;font-size:15px}
+.result .menu{
+  display:inline-block;font-family:var(--mono);font-size:11px;font-weight:700;
+  background:var(--ink);color:var(--paper);padding:2px 8px;margin-left:8px;transform:rotate(-1deg);
+}
+.result .d{font-size:14px;color:var(--ink-soft);margin-top:4px}
 
-  /* Result cards */
-  .results { display: grid; gap: 14px; }
-  .result {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
-    border-radius: var(--radius-sm);
-    padding: 16px 18px;
-  }
-  .result .title { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
-  .result .menu {
-    display: inline-block;
-    font-family: var(--mono);
-    font-size: 12px;
-    background: rgba(245,158,11,0.12);
-    color: var(--accent);
-    padding: 2px 8px;
-    border-radius: 3px;
-    margin-left: 8px;
-  }
-  .result .desc { color: var(--muted); font-size: 14px; }
-  .result.empty { border-left-color: var(--success); }
+/* ============ 脚本卡片（拍立得叠放） ============ */
+#dl .stack{display:flex;flex-wrap:wrap;gap:0;justify-content:center}
+.pola{
+  position:relative;background:#fff;border:2px solid var(--ink);
+  width:280px;padding:18px 18px 20px;margin:0 -14px;
+  transition:transform .18s ease,box-shadow .18s ease;z-index:1;
+}
+.pola:hover{transform:translateY(-14px) rotate(0deg) scale(1.04)!important;box-shadow:8px 10px 0 rgba(23,23,20,.15);z-index:5}
+.pola .tape{
+  position:absolute;top:-12px;left:50%;transform:translateX(-50%) rotate(-3deg);
+  width:90px;height:24px;opacity:.9;
+}
+.pola[data-tape=red] .tape{background:rgba(255,82,82,.85)}
+.pola[data-tape=yellow] .tape{background:rgba(255,210,62,.9)}
+.pola[data-tape=blue] .tape{background:rgba(74,123,255,.85)}
+.pola .shot{
+  height:120px;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;
+  background:var(--paper);margin-bottom:14px;
+}
+.pola .shot svg{width:64px;height:60px}
+.pola .name{font-family:var(--mono);font-weight:700;font-size:14px}
+.pola .desc{font-size:13px;color:var(--ink-soft);min-height:44px;margin:6px 0 14px}
+.pola .btn{width:100%;justify-content:center;padding:10px 14px;font-size:12px}
+.pola .note{
+  position:absolute;right:-8px;top:-34px;font-family:var(--mono);font-size:11px;
+  background:#fff;border:1.5px solid var(--ink);padding:3px 10px;transform:rotate(4deg);
+  opacity:0;transition:opacity .15s,transform .15s;pointer-events:none;white-space:nowrap;
+}
+.pola:hover .note{opacity:1;transform:rotate(-2deg) translateY(-4px)}
 
-  /* Downloads grid */
-  .downloads { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
-  .dl-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 16px;
-    transition: border .12s;
-  }
-  .dl-card:hover { border-color: var(--accent); }
-  .dl-card .name { font-family: var(--mono); font-size: 13px; color: var(--fg); font-weight: 600; }
-  .dl-card .desc { color: var(--muted); font-size: 13px; margin: 6px 0 12px; min-height: 2.4em; }
-  .dl-card a.btn { width: 100%; justify-content: center; padding: 8px 14px; font-size: 13px; }
+/* ============ 表格 ============ */
+table{width:100%;border-collapse:collapse;font-size:14px;background:#fff}
+caption{text-align:left;font-family:var(--mono);font-size:12px;color:var(--ink-faint);padding-bottom:10px;letter-spacing:.1em}
+th,td{border:1.5px solid var(--ink);padding:11px 14px;text-align:left;vertical-align:top}
+th{font-family:var(--mono);font-size:12px;letter-spacing:.08em;background:var(--yellow)}
+td.m{font-family:var(--mono);font-weight:700;white-space:nowrap}
+.tbl-wrap{overflow-x:auto;border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink)}
 
-  /* Table */
-  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
-  th { background: var(--bg-elev); color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
-  td.code { font-family: var(--mono); color: var(--accent); font-size: 13px; }
-  tr:last-child td { border-bottom: 0; }
-  tr:hover td { background: rgba(255,255,255,0.02); }
+/* ============ FAQ ============ */
+.faq{border:2px solid var(--ink);background:#fff;margin-bottom:14px;box-shadow:4px 4px 0 var(--ink)}
+.faq summary{
+  list-style:none;padding:18px 22px;font-weight:800;font-size:16px;position:relative;cursor:none;
+}
+@media(pointer:coarse){.faq summary{cursor:pointer}}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{
+  content:"+";position:absolute;right:20px;top:14px;font-family:var(--mono);font-size:22px;font-weight:400;
+  transition:transform .2s;
+}
+.faq[open] summary::after{transform:rotate(45deg)}
+.faq .body{padding:0 22px 20px;color:var(--ink-soft);font-size:15px;border-top:1.5px dashed var(--ink)}
 
-  /* Accordion (FAQ) */
-  .accordion { display: flex; flex-direction: column; gap: 8px; }
-  .acc-item {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-  }
-  .acc-head {
-    width: 100%;
-    background: none;
-    border: none;
-    color: var(--fg);
-    font-family: var(--sans);
-    font-size: 15px;
-    font-weight: 500;
-    text-align: left;
-    padding: 14px 16px;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-  }
-  .acc-head:hover { background: #2d2d33; }
-  .acc-head .chev { color: var(--muted); transition: transform .2s; }
-  .acc-item.open .acc-head .chev { transform: rotate(180deg); }
-  .acc-body { max-height: 0; overflow: hidden; transition: max-height .25s ease-out; color: var(--muted); font-size: 14px; }
-  .acc-item.open .acc-body { max-height: 400px; }
-  .acc-body-inner { padding: 0 16px 14px; }
+/* ============ 结尾 ============ */
+#end{padding:180px 6vw 140px;text-align:center;overflow:hidden}
+#end .big{
+  font-size:clamp(34px,7vw,92px);font-weight:900;letter-spacing:-.02em;line-height:1.1;
+}
+#end .big em{font-style:normal;position:relative}
+#end .big em::after{content:"";position:absolute;left:0;bottom:6%;width:100%;height:22%;background:var(--blue);opacity:.35;z-index:-1}
+#end .mini-sticker{width:80px;height:76px}
+#ms1{left:12vw;top:22%} #ms2{right:14vw;top:30%} #ms3{left:20vw;bottom:18%}
+@media(max-width:768px){#ms2,#ms3{display:none}}
+footer{
+  border-top:2px solid var(--ink);padding:26px 6vw;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;
+  font-family:var(--mono);font-size:12px;color:var(--ink-soft);position:relative;z-index:2;background:var(--paper);
+}
+footer a{text-decoration:none;border-bottom:1px solid var(--ink-faint)}
 
-  /* Code */
-  code, pre { font-family: var(--mono); font-size: 13px; }
-  pre {
-    background: #0a0a0a;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    overflow-x: auto;
-    color: var(--fg);
-  }
-  code.inline { background: var(--bg-elev); padding: 2px 6px; border-radius: 3px; color: var(--accent); }
+/* ============ 设置 ============ */
+#gear{
+  position:fixed;right:18px;bottom:52px;z-index:210;width:42px;height:42px;
+  background:var(--paper);border:2px solid var(--ink);font-size:18px;line-height:1;
+  box-shadow:3px 3px 0 var(--ink);
+}
+#gear:hover{background:var(--yellow)}
+#settings{
+  position:fixed;right:18px;bottom:102px;z-index:210;width:230px;
+  background:#fff;border:2px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:16px;
+  display:none;
+}
+#settings.open{display:block}
+#settings h4{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--ink-faint);margin-bottom:10px}
+#settings label{display:flex;gap:10px;align-items:center;font-size:13px;padding:6px 0;user-select:none}
+#settings input{accent-color:var(--ink);width:15px;height:15px}
+#toast{
+  position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);z-index:220;
+  background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:12px;padding:8px 18px;
+  opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;letter-spacing:.08em;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-  /* Footer */
-  footer { padding: 32px 0 48px; color: var(--muted-fg); font-size: 13px; }
-  footer .container { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
-
-  /* Toast */
-  .toast {
-    position: fixed; bottom: 24px; right: 24px;
-    background: var(--card);
-    border: 1px solid var(--border-strong);
-    border-left: 3px solid var(--success);
-    padding: 12px 18px;
-    border-radius: var(--radius-sm);
-    font-size: 14px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    transform: translateY(20px); opacity: 0;
-    transition: all .25s ease;
-    pointer-events: none;
-    z-index: 50;
-  }
-  .toast.show { transform: none; opacity: 1; }
-
-  @media (max-width: 720px) {
-    .hero .container { grid-template-columns: 1fr; }
-    .hero .meta { margin-top: 8px; }
-  }
+/* 减少动态效果 */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
 </style>
 </head>
 <body>
 
-<header class="hero">
-  <div class="container">
-    <div>
-      <span class="badge">Delta Force · CPU Virtualization Fix</span>
-      <h1>三角洲行动 <span class="accent">CPU 虚拟化</span><br>弹框修复向导</h1>
-      <p>BIOS 里明明开了 VT-X/SVM，游戏依然弹「未开启 CPU 虚拟化」？本工具对齐腾讯游戏安全团队官方指引，用一组批处理脚本帮你看清命中哪一种情况、对应怎么修。</p>
-    </div>
-    <div class="meta">
-      <div>v1.0 · MIT</div>
-      <div style="margin-top:6px"><a id="repo-link" href="#">GitHub 仓库 →</a></div>
-    </div>
-  </div>
-</header>
+<!-- 分栏线 -->
+<div class="rails" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
 
-<section>
-  <div class="container">
-    <span class="step-num">PROBLEM</span>
-    <h2>这是什么弹框，为什么要修？</h2>
-    <p class="lead">腾讯游戏安全团队与微软团队合作，要求部分账号开启系统硬件安全特性（CPU 虚拟化）以更好地保障对局安全。开启这些功能不会侵犯隐私或影响电脑使用。</p>
-    <div class="callout">
-      <p>很多玩家 BIOS 里 <strong>已开启</strong> VT-X/VT-D 或 SVM/IOMMU，但游戏里仍弹框，原因通常是 Windows 内部还有占用 VT-x 的安全特性没关。官方梳理出 4 种情况，本工具把它们对应到一组脚本。</p>
-      <p class="quote">— 参考：gamesafe.qq.com/article/1181.shtml</p>
-    </div>
+<!-- 预加载 -->
+<div id="preloader" aria-hidden="true">
+  <svg id="pl-spin" viewBox="0 0 220 220">
+    <defs><path id="cir" d="M110,110 m-86,0 a86,86 0 1,1 172,0 a86,86 0 1,1 -172,0"/></defs>
+    <text><textPath href="#cir">DELTA FORCE · VBS FIX · LOADING · 三角洲 ·</textPath></text>
+  </svg>
+  <svg class="delta-draw" viewBox="0 0 130 120">
+    <path class="fill-tri" d="M65 18 L114 100 L16 100 Z"/>
+    <path d="M65 18 L114 100 L16 100 Z M65 44 L92 92 L38 92 Z"/>
+  </svg>
+  <div id="pl-bar"><i></i></div>
+  <div id="pl-num">0%</div>
+</div>
+
+<!-- 光标 -->
+<div id="cursor-dot" aria-hidden="true"></div>
+<div id="cursor-ring" aria-hidden="true"></div>
+<div id="coords" aria-hidden="true">X 0000 · Y 0000</div>
+
+<!-- 导航 -->
+<nav>
+  <a class="brand" href="#top" data-cursor="point">
+    <svg viewBox="0 0 130 120"><path d="M65 14 L116 102 L14 102 Z" fill="none" stroke="#171714" stroke-width="9" stroke-linejoin="round"/><path d="M65 44 L92 92 L38 92 Z" fill="#ffd23e"/></svg>
+    Δ VBS-FIX
+  </a>
+  <div class="links">
+    <a href="#wizard" data-cursor="point">诊断</a>
+    <a href="#dl" data-cursor="point">下载</a>
+    <a href="#ref" data-cursor="point">对照</a>
+    <a href="#faq" data-cursor="point">FAQ</a>
+    <a href="https://github.com/zuoyou12/delta-force-vbs-fix" target="_blank" rel="noopener" data-cursor="point">GITHUB</a>
+  </div>
+</nav>
+
+<!-- 首屏 -->
+<section id="hero" data-anchor="top">
+  <div id="three-wrap" aria-hidden="true"></div>
+  <span class="tag reveal">DELTA FORCE · 腾讯游戏安全指引对齐</span>
+  <h1>
+    <span class="row"><span class="reveal">三角洲行动</span></span>
+    <span class="row"><span class="reveal"><span class="hl">CPU 虚拟化</span></span></span>
+    <span class="row"><span class="reveal">弹框修复向导</span></span>
+  </h1>
+  <p class="sub reveal">BIOS 里明明开了 VT-X/SVM，游戏仍弹「未开启 CPU 虚拟化」？<br>
+  对齐 gamesafe.qq.com 官方 4 种情况 —— 3 步问答，告诉你该修哪一项。</p>
+  <div class="cta-row reveal">
+    <a class="btn primary" href="#wizard" data-cursor="point">开始诊断 ↓</a>
+    <a class="btn" href="https://github.com/zuoyou12/delta-force-vbs-fix" target="_blank" rel="noopener" data-cursor="point">GitHub 仓库 ↗</a>
+  </div>
+
+  <div class="sticker" id="sticker-hero" data-cursor="grab" aria-hidden="true">
+    <div class="paper"></div>
+    <div class="gloss"></div>
+    <div class="fold"></div>
+    <svg viewBox="0 0 120 112" style="position:absolute;inset:0;width:100%;height:100%">
+      <path d="M60 16 L104 94 L16 94 Z" fill="none" stroke="#171714" stroke-width="5" stroke-linejoin="round" stroke-dasharray="1 0"/>
+      <path d="M60 40 L86 86 L34 86 Z" fill="#ff5252"/>
+      <text x="60" y="108" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="#171714" letter-spacing="2">DRAG ME</text>
+    </svg>
   </div>
 </section>
 
-<section>
-  <div class="container">
-    <span class="step-num">WIZARD</span>
-    <h2>交互式诊断向导</h2>
-    <p class="lead">按 3 步走，最后给出你应运行 <code class="inline">fix-vbs.bat</code> 的具体菜单编号。</p>
+<!-- 诊断向导 -->
+<section id="wizard">
+  <span class="tag reveal">STEP BY STEP</span>
+  <h2 class="reveal">交互式诊断向导
+    <svg class="squiggle" viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M2 8 Q 30 2 60 7 T 118 7 T 198 6" fill="none" stroke="#ff5252" stroke-width="3" stroke-linecap="round"/></svg>
+  </h2>
+  <p class="lead reveal">回答 3 个问题，给出你应运行 <code class="k">fix-vbs.bat</code> 的具体菜单编号。所有脚本需在桌面右键「以管理员身份运行」。</p>
 
-    <div class="wizard">
-      <div class="wizard-progress">
-        <div class="pip active" id="pip-1"></div>
-        <div class="pip" id="pip-2"></div>
-        <div class="pip" id="pip-3"></div>
+  <div class="panel reveal">
+    <div class="tape" aria-hidden="true"></div>
+    <div class="steps-bar"><i class="on" id="pip1"></i><i id="pip2"></i><i id="pip3"></i></div>
+
+    <div class="wstep active" data-step="1">
+      <h3>第 1 步 · BIOS 里开过 CPU 虚拟化吗？</h3>
+      <p class="hint">Win + R 输 msinfo32 可查；Intel 需开 VT-X + VT-D，AMD 需开 SVM + IOMMU。</p>
+      <div class="choices" id="q1">
+        <label class="choice" data-cursor="point"><input type="radio" name="q1" value="yes"><span><span class="t">已开启</span><br><span class="d">BIOS 里确认开过 VT-X/SVM，但游戏还是弹框</span></span></label>
+        <label class="choice" data-cursor="point"><input type="radio" name="q1" value="no"><span><span class="t">没开过 / 不确定</span><br><span class="d">从没进过 BIOS，或者不知道有没有开</span></span></label>
       </div>
+      <div class="wrow"><span></span><button class="btn primary" id="next1" data-cursor="point">下一步 →</button></div>
+    </div>
 
-      <!-- Step 1 -->
-      <div class="step active" id="step-1">
-        <h3>第 1 步：你是否已在 BIOS 中开启 CPU 虚拟化？</h3>
-        <p class="hint">用 <code class="inline">Win + R</code> 输 <code class="inline">msinfo32</code> 可查主板品牌。Intel 平台需开 <strong>VT-X</strong> + <strong>VT-D</strong>；AMD 平台需开 <strong>SVM</strong> + <strong>IOMMU</strong>。</p>
-        <div class="choices">
-          <label class="choice" data-step1="yes">
-            <input type="radio" name="step1" value="yes">
-            <div>
-              <div class="label">是，BIOS 里已开启</div>
-              <div class="sub">进下一步看 Windows 端是否仍占用</div>
-            </div>
-          </label>
-          <label class="choice" data-step1="no">
-            <input type="radio" name="step1" value="no">
-            <div>
-              <div class="label">否 / 不确定</div>
-              <div class="sub">先去 BIOS 开启，参考下方 Part1 指引表</div>
-            </div>
-          </label>
-        </div>
-        <div class="btn-row">
-          <button class="btn primary" id="next1" disabled>下一步 →</button>
-        </div>
+    <div class="wstep" data-step="2">
+      <h3>第 2 步 · 你电脑上中了几条？（多选）</h3>
+      <p class="hint">不确定的全勾上也没关系，诊断脚本会再核实一遍。</p>
+      <div class="choices" id="q2">
+        <label class="choice" data-cursor="point"><input type="checkbox" value="hvci"><span><span class="t">内核隔离 · 内存完整性是开的</span><br><span class="d">Windows 安全中心 → 设备安全性里能看到，默认很多新机是开的（情况一）</span></span></label>
+        <label class="choice" data-cursor="point"><input type="checkbox" value="hyperv"><span><span class="t">用过 Hyper-V / WSL2 / Docker / 安卓模拟器</span><br><span class="d">这些都会占用虚拟化（情况三）</span></span></label>
+        <label class="choice" data-cursor="point"><input type="checkbox" value="hello"><span><span class="t">开了 Windows Hello 指纹 / 面部登录</span><br><span class="d">会牵着 Hyper-V 关不掉（情况四-a）</span></span></label>
+        <label class="choice" data-cursor="point"><input type="checkbox" value="av"><span><span class="t">装了第三方杀毒软件</span><br><span class="d">部分杀软会占用 VT-x（情况四-b）</span></span></label>
+        <label class="choice" data-cursor="point"><input type="checkbox" value="unsure"><span><span class="t">都不确定 / 懒得看</span><br><span class="d">直接走一键自动修复</span></span></label>
       </div>
-
-      <!-- Step 2 -->
-      <div class="step" id="step-2">
-        <h3>第 2 步：重启电脑后，弹框是否仍在？</h3>
-        <p class="hint">BIOS 改完必须重启。重启后再次进游戏验证。</p>
-        <div class="choices">
-          <label class="choice" data-step2="still">
-            <input type="radio" name="step2" value="still">
-            <div>
-              <div class="label">仍在，弹框没消失</div>
-              <div class="sub">多半是 Windows 端占用 VT-x，进第 3 步细查</div>
-            </div>
-          </label>
-          <label class="choice" data-step2="gone">
-            <input type="radio" name="step2" value="gone">
-            <div>
-              <div class="label">不再弹框</div>
-              <div class="sub">问题已解决，可直接关闭本页</div>
-            </div>
-          </label>
-        </div>
-        <div class="btn-row">
-          <button class="btn ghost" id="back2">← 上一步</button>
-          <button class="btn primary" id="next2" disabled>下一步 →</button>
-        </div>
+      <div class="wrow">
+        <button class="btn" id="back2" data-cursor="point">← 上一步</button>
+        <button class="btn primary" id="next2" data-cursor="point">出结果 →</button>
       </div>
+    </div>
 
-      <!-- Step 3 -->
-      <div class="step" id="step-3">
-        <h3>第 3 步：勾选你目前的情况</h3>
-        <p class="hint">勾选所有符合的项目，可多选。系统会基于勾选项给出对应的官方情况与脚本菜单。</p>
-        <div class="checks">
-          <label class="check">
-            <input type="checkbox" name="sym" value="hvci">
-            <div>
-              <div class="label">「内存完整性 / HVCI」处于开启状态</div>
-              <div class="sub">Windows 安全中心 → 设备安全性 → 内核隔离 → 内存完整性 已开</div>
-            </div>
-          </label>
-          <label class="check">
-            <input type="checkbox" name="sym" value="hyperv">
-            <div>
-              <div class="label">装了 Hyper-V 或类似虚拟化平台</div>
-              <div class="sub">控制面板 → 启用或关闭 Windows 功能 → Hyper-V 已勾选</div>
-            </div>
-          </label>
-          <label class="check">
-            <input type="checkbox" name="sym" value="hello">
-            <div>
-              <div class="label">使用面部 / 指纹登录 Windows</div>
-              <div class="sub">Windows Hello 生物识别会与 Hyper-V 关联，导致关不掉</div>
-            </div>
-          </label>
-          <label class="check">
-            <input type="checkbox" name="sym" value="vbs">
-            <div>
-              <div class="label">不确定，直接关 VBS</div>
-              <div class="sub">官方情况二，最常见，单独关掉就行</div>
-            </div>
-          </label>
-          <label class="check">
-            <input type="checkbox" name="sym" value="av">
-            <div>
-              <div class="label">装了第三方杀软（非 Windows Defender）</div>
-              <div class="sub">部分第三方杀软会占用 VT-x，需退出后重试</div>
-            </div>
-          </label>
-          <label class="check">
-            <input type="checkbox" name="sym" value="registry">
-            <div>
-              <div class="label">改了上面但还在弹框</div>
-              <div class="sub">注册表或组策略 Device Guard 还有残留</div>
-            </div>
-          </label>
-        </div>
-        <div class="btn-row">
-          <button class="btn ghost" id="back3">← 上一步</button>
-          <button class="btn primary" id="genResult" disabled>生成修复建议 →</button>
-        </div>
-      </div>
-
-      <!-- Result -->
-      <div class="step" id="step-result">
-        <h3>修复建议</h3>
-        <p class="hint">按下面顺序运行脚本。所有 .bat 文件均需 <strong>右键 → 以管理员身份运行</strong>，运行后必须重启电脑。</p>
-        <div class="results" id="result-list"></div>
-        <div class="btn-row" style="margin-top:18px">
-          <button class="btn ghost" id="restart-wizard">重新诊断</button>
-          <a class="btn primary" href="#downloads">前往下载 →</a>
-        </div>
+    <div class="wstep" data-step="3">
+      <h3>第 3 步 · 你的修复方案</h3>
+      <p class="hint">先跑 diagnose-vbs.bat 复核，再按下面编号在 fix-vbs.bat 里选菜单。修完重启生效。</p>
+      <div id="results"></div>
+      <div class="wrow">
+        <button class="btn" id="back3" data-cursor="point">← 重答</button>
+        <button class="btn blue" id="dl-fix-btn" data-cursor="point">下载 fix-vbs.bat ↓</button>
       </div>
     </div>
   </div>
 </section>
 
-<section id="downloads">
-  <div class="container">
-    <span class="step-num">DOWNLOADS</span>
-    <h2>脚本下载</h2>
-    <p class="lead">三个 .bat 文件均为 UTF-8 BOM 编码，首行 <code class="inline">chcp 65001</code> 自动切码页，中英文 Windows 均不乱码。右键 → 以管理员身份运行。</p>
-    <div class="downloads">
-      <div class="dl-card">
-        <div class="name">diagnose-vbs.bat</div>
-        <div class="desc">只读检测，输出 8 项检查并给出建议菜单编号。</div>
-        <a class="btn primary" id="dl-diag" href="#">下载</a>
-      </div>
-      <div class="dl-card">
-        <div class="name">fix-vbs.bat</div>
-        <div class="desc">菜单驱动修复，含一键自动修复（菜单 5）。</div>
-        <a class="btn primary" id="dl-fix" href="#">下载</a>
-      </div>
-      <div class="dl-card">
-        <div class="name">restore-vbs.bat</div>
-        <div class="desc">游戏结束后反向恢复安全特性。</div>
-        <a class="btn primary" id="dl-restore" href="#">下载</a>
-      </div>
-    </div>
-    <p style="margin-top:14px; font-size:13px; color:var(--muted-fg); font-family:var(--mono)">
-      下载直链指向 GitHub 仓库 raw 文件；也可以直接访问仓库 <code>github.com/zuoyou12/delta-force-vbs-fix</code> 整包下载（Code -&gt; Download ZIP）。
-    </p>
+<!-- 脚本下载 -->
+<section id="dl">
+  <span class="tag reveal">SCRIPTS</span>
+  <h2 class="reveal">三个批处理，各管一段
+    <svg class="squiggle" viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M2 7 Q 40 3 80 8 T 150 6 T 198 7" fill="none" stroke="#4a7bff" stroke-width="3" stroke-linecap="round"/></svg>
+  </h2>
+  <p class="lead reveal">UTF-8 编码、管理员运行、自带日志。下载后别直接双击，右键 → 以管理员身份运行。</p>
+  <div class="stack reveal" id="stack"></div>
+  <p style="margin-top:26px;font-family:var(--mono);font-size:12px;color:var(--ink-faint)">
+    直链指向仓库 raw 文件；也可整包下载：github.com/zuoyou12/delta-force-vbs-fix → Code → Download ZIP。
+  </p>
+</section>
+
+<!-- 对照表 -->
+<section id="ref">
+  <span class="tag reveal">REFERENCE</span>
+  <h2 class="reveal">官方指引 ↔ 菜单一览
+    <svg class="squiggle" viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M2 8 Q 34 2 70 7 T 130 6 T 198 7" fill="none" stroke="#2fbf71" stroke-width="3" stroke-linecap="round"/></svg>
+  </h2>
+  <p class="lead reveal">数据来自腾讯游戏安全团队官方文章 gamesafe.qq.com/article/1181.shtml，逐条对应到脚本菜单。</p>
+  <div class="tbl-wrap reveal">
+    <table id="ref-table">
+      <caption>// 弹框原因 → 修复入口</caption>
+      <thead><tr><th>官方章节</th><th>弹框原因</th><th>官方操作</th><th>本项目</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div style="height:60px"></div>
+  <div class="tbl-wrap reveal">
+    <table id="bios-table">
+      <caption>// Part 1 · 手动 BIOS 指引（脚本改不了 BIOS，重启按对应键）</caption>
+      <thead><tr><th>主板品牌</th><th>BIOS 键</th><th>平台</th><th>需开启</th></tr></thead>
+      <tbody></tbody>
+    </table>
   </div>
 </section>
 
-<section>
-  <div class="container">
-    <span class="step-num">REFERENCE</span>
-    <h2>官方指引 ↔ 脚本菜单 对照表</h2>
-    <p class="lead">完整对应关系，懒得用向导的话直接对照下表选菜单。</p>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>官方情况</th><th>占用来源</th><th>脚本</th><th>菜单</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Part 1</td><td>BIOS 未开 VT-X/SVM</td><td>手动进 BIOS</td><td class="code">—</td></tr>
-          <tr><td>情况一</td><td>HVCI 内存完整性</td><td>fix-vbs.bat</td><td class="code">3</td></tr>
-          <tr><td>情况二</td><td>VBS 基于虚拟化的安全性</td><td>fix-vbs.bat</td><td class="code">1</td></tr>
-          <tr><td>情况三</td><td>Hyper-V</td><td>fix-vbs.bat</td><td class="code">4</td></tr>
-          <tr><td>情况四-a</td><td>WindowsHello 面部/指纹</td><td>fix-vbs.bat</td><td class="code">2</td></tr>
-          <tr><td>情况四-b</td><td>第三方杀软</td><td>手动退出</td><td class="code">—</td></tr>
-          <tr><td>情况四-c/d</td><td>注册表/组策略 DeviceGuard 残留</td><td>fix-vbs.bat</td><td class="code">6</td></tr>
-          <tr><td>不确定</td><td>—</td><td>fix-vbs.bat</td><td class="code">5 (一键)</td></tr>
-          <tr><td>恢复</td><td>反向恢复安全特性</td><td>restore-vbs.bat</td><td class="code">—</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+<!-- FAQ -->
+<section id="faq">
+  <span class="tag reveal">FAQ</span>
+  <h2 class="reveal">常见问题
+    <svg class="squiggle" viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M2 6 Q 44 3 78 8 T 140 7 T 198 6" fill="none" stroke="#ffd23e" stroke-width="3" stroke-linecap="round"/></svg>
+  </h2>
+  <p class="lead reveal">改之前看一眼，心里有数。</p>
+  <div id="faq-list" class="reveal"></div>
 </section>
 
-<section>
-  <div class="container">
-    <span class="step-num">PART 1</span>
-    <h2>主流主板 BIOS 进入指引</h2>
-    <p class="lead">脚本无法替你改 BIOS，下面是常见主板进入 BIOS 的按键与需开启项。Intel 需开 <strong>VT-X</strong> + <strong>VT-D</strong>；AMD 需开 <strong>SVM</strong> + <strong>IOMMU</strong>，缺一不可。改完按 <code class="inline">F10</code> 保存退出。</p>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>主板品牌</th><th>BIOS 进入键</th><th>CPU 平台</th><th>需开启</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>华硕 ASUS</td><td>F2 / DEL</td><td>Intel</td><td>Virtualization Technology + VT-d</td></tr>
-          <tr><td>技嘉 Gigabyte</td><td>F12 / DEL</td><td>Intel</td><td>芯片组 → VT-d</td></tr>
-          <tr><td>微星 MSI</td><td>DEL</td><td>AMD</td><td>SVM Mode + IOMMU</td></tr>
-          <tr><td>惠普 HP</td><td>F10 (笔电 F2/F10)</td><td>Intel/AMD</td><td>先进 → 系统选项</td></tr>
-          <tr><td>戴尔 Dell</td><td>F2 (部分 F12)</td><td>Intel</td><td>BIOS Setup → Virtualization Support</td></tr>
-          <tr><td>联想 Lenovo</td><td>F1 / Fn+F2</td><td>Intel</td><td>高级菜单 → Virtualization 技术 + VT-d</td></tr>
-          <tr><td>联想 Lenovo</td><td>F1 / Fn+F2</td><td>AMD</td><td>AMD Secure Virtual Machine + IOMMU</td></tr>
-          <tr><td>宏碁 Acer</td><td>F2</td><td>—</td><td>Advanced → Virtualization</td></tr>
-          <tr><td>七彩虹 Colorful</td><td>DEL</td><td>Intel</td><td>Advanced → CPU Virtualization</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p style="margin-top:14px; font-size:13px; color:var(--muted-fg)">
-      部分电脑厂商会定制化 BIOS 页面与命令，与教程不符属正常，请联系主板服务提供商获取进一步支持。
-    </p>
-  </div>
-</section>
+<!-- 结尾 -->
+<section id="end">
+  <p class="big reveal">FIX THE VBS,<br><em>BACK TO THE GAME.</em></p>
+  <p class="reveal" style="margin-top:26px;font-family:var(--mono);font-size:12px;color:var(--ink-faint);letter-spacing:.2em">Δ VBS-FIX · 2026 · MIT LICENSE</p>
 
-<section>
-  <div class="container">
-    <span class="step-num">FAQ</span>
-    <h2>常见问题</h2>
-    <p class="lead">点开展开答案。</p>
-    <div class="accordion" id="faq">
-      <div class="acc-item">
-        <button class="acc-head"><span>这是开挂吗？开了会不会封号？</span><span class="chev">⌄</span></button>
-        <div class="acc-body"><div class="acc-body-inner">不是。腾讯游戏安全团队与微软团队合作，要求玩家开启系统硬件安全特性以更好地保障对局安全，开启这些功能不会侵犯隐私或影响电脑使用。本工具仅辅助玩家完成官方指引的设置。</div></div>
-      </div>
-      <div class="acc-item">
-        <button class="acc-head"><span>改完之后能恢复吗？</span><span class="chev">⌄</span></button>
-        <div class="acc-body"><div class="acc-body-inner">可以。运行 <code class="inline">restore-vbs.bat</code> 反向恢复所有修改，重启生效。</div></div>
-      </div>
-      <div class="acc-item">
-        <button class="acc-head"><span>为什么必须管理员运行？</span><span class="chev">⌄</span></button>
-        <div class="acc-body"><div class="acc-body-inner"><code class="inline">bcdedit</code>、<code class="inline">reg add HKLM</code>、<code class="inline">DISM</code>、<code class="inline">Disable-WindowsOptionalFeature</code> 都需要管理员权限，否则会写不进系统。</div></div>
-      </div>
-      <div class="acc-item">
-        <button class="acc-head"><span>关了 Hyper-V 影响我跑 Docker / WSL2 / 安卓模拟器怎么办？</span><span class="chev">⌄</span></button>
-        <div class="acc-body"><div class="acc-body-inner">这些工具都依赖 Hyper-V 或虚拟化平台。游戏期间关掉会影响这些工具，游戏结束后用 <code class="inline">restore-vbs.bat</code> 恢复即可。如果重度依赖这些工具，建议改用「情况二 VBS」单独关（<code class="inline">fix-vbs.bat</code> 菜单 1），保留 Hyper-V。</div></div>
-      </div>
-      <div class="acc-item">
-        <button class="acc-head"><span>第三方杀软报毒了？</span><span class="chev">⌄</span></button>
-        <div class="acc-body"><div class="acc-body-inner">本工具仅修改 Windows 系统注册表与特性开关，不含任何可疑行为。部分杀软对修改系统特性敏感，可加白名单或临时退出杀软后再运行。</div></div>
-      </div>
-      <div class="acc-item">
-        <button class="acc-head"><span>修改后还要做什么？</span><span class="chev">⌄</span></button>
-        <div class="acc-body"><div class="acc-body-inner">重启电脑使修改生效。重启后建议运行 <code class="inline">diagnose-vbs.bat</code> 复查 VBS 状态是否已变为 0。</div></div>
-      </div>
-    </div>
+  <div class="sticker mini-sticker" id="ms1" data-cursor="grab" aria-hidden="true">
+    <div class="paper"></div><div class="gloss"></div><div class="fold"></div>
+    <svg viewBox="0 0 80 76" style="position:absolute;inset:0;width:100%;height:100%"><path d="M40 10 L70 62 L10 62 Z" fill="none" stroke="#171714" stroke-width="4" stroke-linejoin="round"/><path d="M40 28 L58 56 L22 56 Z" fill="#ffd23e"/></svg>
   </div>
-</section>
-
-<section>
-  <div class="container">
-    <span class="step-num">DISCLAIMER</span>
-    <h2>免责声明</h2>
-    <p class="lead">本工具按「原样」提供，作者不对因使用本工具造成的任何系统损坏、数据丢失或游戏账号问题负责。修改注册表、系统特性存在固有风险，<strong>强烈建议在运行前创建系统还原点</strong>（<code class="inline">Win + R → systempropertiesprotection → 创建</code>）。</p>
-    <p style="font-size:14px; color:var(--muted)">工具本身仅修改腾讯游戏安全官方指引中明确提到的注册表项与 Windows 特性，不涉及任何游戏文件、反作弊系统或第三方内存修改。</p>
+  <div class="sticker mini-sticker" id="ms2" data-cursor="grab" aria-hidden="true">
+    <div class="paper"></div><div class="gloss"></div><div class="fold"></div>
+    <svg viewBox="0 0 80 76" style="position:absolute;inset:0;width:100%;height:100%"><text x="40" y="46" text-anchor="middle" font-family="ui-monospace,monospace" font-size="15" font-weight="700" fill="#171714">VBS</text><path d="M14 54 L66 20" stroke="#ff5252" stroke-width="5" stroke-linecap="round"/></svg>
+  </div>
+  <div class="sticker mini-sticker" id="ms3" data-cursor="grab" aria-hidden="true">
+    <div class="paper"></div><div class="gloss"></div><div class="fold"></div>
+    <svg viewBox="0 0 80 76" style="position:absolute;inset:0;width:100%;height:100%"><path d="M16 40 L32 56 L64 20" fill="none" stroke="#2fbf71" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </div>
 </section>
 
 <footer>
-  <div class="container">
-    <div>MIT License · 2026</div>
-    <div>致谢：<a href="https://gamesafe.qq.com/article/1181.shtml" target="_blank" rel="noopener">腾讯游戏安全团队官方指引</a> · <a href="https://learn.microsoft.com/zh-cn/troubleshoot/windows-client/application-management/virtualization-apps-not-work-with-hyper-v" target="_blank" rel="noopener">Microsoft Learn - Hyper-V</a></div>
-    <div><a id="repo-link-footer" href="#">GitHub 仓库</a></div>
-  </div>
+  <span>Δ VBS-FIX — 三角洲行动 CPU 虚拟化修复工具包</span>
+  <span>参考 <a href="https://gamesafe.qq.com/article/1181.shtml" target="_blank" rel="noopener" data-cursor="point">gamesafe.qq.com/article/1181.shtml</a> · 仅供学习交流，与腾讯无关</span>
 </footer>
 
-<div class="toast" id="toast"></div>
+<!-- 设置 -->
+<button id="gear" data-cursor="point" aria-label="设置">⚙</button>
+<div id="settings" role="dialog" aria-label="页面设置">
+  <h4>SETTINGS</h4>
+  <label data-cursor="point"><input type="checkbox" id="set-cursor" checked> 自定义光标</label>
+  <label data-cursor="point"><input type="checkbox" id="set-coords" checked> 鼠标坐标显示</label>
+  <label data-cursor="point"><input type="checkbox" id="set-sticker" checked> 装饰贴纸</label>
+</div>
+<div id="toast" role="status"></div>
 
-<script>
-  // ==================== Wizard State ====================
-  const state = { step1: null, step2: null, syms: new Set() };
+<script type="module">
+/* ================= 数据配置（统一替换） ================= */
+const CONFIG = {
+  repo: 'https://github.com/zuoyou12/delta-force-vbs-fix',
+  raw:  'https://raw.githubusercontent.com/zuoyou12/delta-force-vbs-fix/main/',
+  scripts: [
+    { file:'diagnose-vbs.bat', tape:'yellow', rot:-3, note:'先跑我', desc:'只读诊断 · 8 项检测，报告命中哪种情况', icon:'search' },
+    { file:'fix-vbs.bat',      tape:'red',    rot:2,  note:'菜单 0-7', desc:'菜单修复 · 覆盖官方 4 种情况 + 一键修复', icon:'wrench' },
+    { file:'restore-vbs.bat',  tape:'blue',   rot:-2, note:'善后恢复', desc:'游戏结束后恢复 VBS / HVCI / Hyper-V', icon:'undo' },
+  ],
+  refRows: [
+    ['Part 1','BIOS 未开 VT-X/VT-D 或 SVM/IOMMU','手动进 BIOS 开启','diagnose 检测 + 下方 BIOS 表'],
+    ['情况一','HVCI 内存完整性占用','安全中心 → 内核隔离 → 关内存完整性','fix 菜单 3'],
+    ['情况二','VBS 基于虚拟化的安全性','bcdedit /set hypervisorlaunchtype off','fix 菜单 1'],
+    ['情况三','Hyper-V 占用','启用或关闭 Windows 功能 → 取消 Hyper-V','fix 菜单 4'],
+    ['情况四-a','WindowsHello 阻止关 Hyper-V','关面部/指纹 + 删 PIN','fix 菜单 2'],
+    ['情况四-b','第三方杀软占用','退出第三方杀软','diagnose 检测提示'],
+    ['情况四-c/d','注册表残留 / 组策略 Device Guard','regedit / gpedit 改 0','fix 菜单 6'],
+    ['全套','不确定 / 一把梭','—','fix 菜单 5 一键修复'],
+    ['恢复','游戏结束恢复安全特性','反向操作','restore-vbs.bat'],
+  ],
+  biosRows: [
+    ['华硕 ASUS','F2 / DEL','Intel','Virtualization Technology + VT-d'],
+    ['技嘉 Gigabyte','F12 / DEL','Intel','芯片组 → VT-d'],
+    ['微星 MSI','DEL','AMD','SVM Mode + IOMMU'],
+    ['惠普 HP','F10（笔电 F2/F10）','Intel/AMD','先进 → 系统选项'],
+    ['戴尔 Dell','F2（部分 F12）','Intel','Virtualization Support'],
+    ['联想 Lenovo','F1 / Fn+F2','Intel/AMD','Virtualization 技术 + VT-d / SVM + IOMMU'],
+    ['宏碁 Acer','F2','Intel/AMD','Advanced → Virtualization'],
+    ['七彩虹 Colorful','DEL','Intel','Advanced → CPU Virtualization'],
+  ],
+  faq: [
+    ['这是开挂吗？会封号吗？','不是。腾讯游戏安全团队与微软合作，要求玩家开启系统硬件安全特性以保障对局安全。本工具只是辅助完成官方指引里的系统设置，不碰游戏文件与反作弊。'],
+    ['改完能恢复吗？','可以。restore-vbs.bat 一键反向恢复全部修改，重启生效。'],
+    ['为什么必须管理员运行？','bcdedit、reg add HKLM、DISM 都需要管理员权限，否则写不进系统。'],
+    ['关了 Hyper-V，Docker / WSL2 / 模拟器怎么办？','它们依赖 Hyper-V，游戏期间会受影响；玩完用 restore-vbs.bat 恢复即可。重度依赖者可只关情况二 VBS（菜单 1）。'],
+    ['杀软报毒？','工具只改官方指引提到的注册表项与系统特性，无任何可疑行为。加白名单或暂时退出杀软即可。'],
+    ['运行完还要做什么？','重启电脑生效。重启后再跑 diagnose-vbs.bat 确认 VBS 状态已变为 0。'],
+  ],
+};
 
-  // ==================== Step Navigation ====================
-  function showStep(id) {
-    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    updatePips();
-  }
-  function updatePips() {
-    const visible = document.querySelector('.step.active')?.id;
-    const order = ['step-1','step-2','step-3','step-result'];
-    const idx = order.indexOf(visible);
-    ['pip-1','pip-2','pip-3'].forEach((p,i) => {
-      const el = document.getElementById(p);
-      el.classList.remove('active','done');
-      if (i < idx) el.classList.add('done');
-      else if (i === idx || (idx === 3 && i === 2)) el.classList.add('active');
-    });
-  }
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const coarse  = matchMedia('(pointer: coarse)').matches;
+if (reduced) document.body.classList.add('no-motion');
+history.scrollRestoration = 'manual'; scrollTo(0, 0);
 
-  // Step 1
-  document.querySelectorAll('label.choice[data-step1]').forEach(label => {
-    label.addEventListener('click', () => {
-      document.querySelectorAll('label.choice[data-step1]').forEach(l => l.classList.remove('selected'));
-      label.classList.add('selected');
-      label.querySelector('input').checked = true;
-      state.step1 = label.dataset.step1;
-      document.getElementById('next1').disabled = false;
-    });
+/* ================= 预加载 ================= */
+const pre = $('#preloader'), plBar = $('#pl-bar i'), plNum = $('#pl-num'), plSpin = $('#pl-spin');
+let progress = 0, booted = false;
+plSpin.style.animationDelay = '1.1s, 1.1s';
+const tick = setInterval(() => {
+  progress = Math.min(progress + 4 + Math.random() * 7, 92);
+  plBar.style.transform = `scaleX(${progress / 100})`;
+  plNum.textContent = Math.round(progress) + '%';
+}, 130);
+function enterPage() {
+  if (booted) return; booted = true;
+  clearInterval(tick);
+  plBar.style.transform = 'scaleX(1)'; plNum.textContent = '100%';
+  setTimeout(() => {
+    pre.classList.add('done');
+    setTimeout(() => pre.remove(), 800);
+    heroIntro();
+  }, reduced ? 0 : 350);
+}
+setTimeout(enterPage, 2600);            // 正常节奏
+setTimeout(enterPage, 10000);           // 资源失败兜底
+
+/* ================= 首屏入场 ================= */
+function heroIntro() {
+  if (reduced || !window.gsap) { $$('#hero .reveal').forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; }); return; }
+  gsap.to('#hero .reveal', { opacity: 1, y: 0, duration: .7, ease: 'back.out(1.6)', stagger: .09 });
+}
+
+/* ================= 渲染动态内容 ================= */
+// 脚本卡片
+const icons = {
+  search: '<svg viewBox="0 0 64 60"><circle cx="26" cy="26" r="16" fill="none" stroke="#171714" stroke-width="4"/><path d="M38 38 L54 54" stroke="#171714" stroke-width="5" stroke-linecap="round"/></svg>',
+  wrench: '<svg viewBox="0 0 64 60"><path d="M44 8 a14 14 0 1 0 6 26 L30 54 a6 6 0 0 1 -8 -8 L42 26" fill="none" stroke="#171714" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  undo:   '<svg viewBox="0 0 64 60"><path d="M20 14 L8 26 L20 38" fill="none" stroke="#171714" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 26 h30 a14 14 0 0 1 0 28 h-16" fill="none" stroke="#171714" stroke-width="4"/></svg>',
+};
+$('#stack').innerHTML = CONFIG.scripts.map(s => `
+  <div class="pola" data-tape="${s.tape}" style="transform:rotate(${s.rot}deg)">
+    <div class="tape"></div><div class="note">${s.note}</div>
+    <div class="shot">${icons[s.icon]}</div>
+    <div class="name">${s.file}</div><div class="desc">${s.desc}</div>
+    <a class="btn primary" href="${CONFIG.raw}${s.file}" download="${s.file}" data-cursor="point">下载 ↓</a>
+  </div>`).join('');
+// 表格
+$('#ref-table tbody').innerHTML  = CONFIG.refRows.map(r => `<tr><td class="m">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="m">${r[3]}</td></tr>`).join('');
+$('#bios-table tbody').innerHTML = CONFIG.biosRows.map(r => `<tr><td class="m">${r[0]}</td><td class="m">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('');
+// FAQ
+$('#faq-list').innerHTML = CONFIG.faq.map(f => `<details class="faq"><summary data-cursor="point">${f[0]}</summary><div class="body"><p style="padding-top:14px">${f[1]}</p></div></details>`).join('');
+
+/* ================= 向导逻辑 ================= */
+const steps = $$('.wstep'), pips = [$('#pip1'), $('#pip2'), $('#pip3')];
+let cur = 1;
+function goStep(n) {
+  cur = n;
+  steps.forEach(s => s.classList.toggle('active', +s.dataset.step === n));
+  pips.forEach((p, i) => { p.classList.toggle('on', i + 1 === n); p.classList.toggle('done', i + 1 < n); });
+}
+$$('#q1 .choice').forEach(c => c.addEventListener('click', () => { $$('#q1 .choice').forEach(x => x.classList.remove('sel')); c.classList.add('sel'); }));
+$$('#q2 .choice').forEach(c => c.addEventListener('click', e => { if (e.target.tagName !== 'INPUT') c.querySelector('input').checked = !c.querySelector('input').checked; c.classList.toggle('sel', c.querySelector('input').checked); }));
+$('#next1').onclick = () => goStep(2);
+$('#back2').onclick = () => goStep(1);
+$('#back3').onclick = () => goStep(1);
+$('#next2').onclick = () => {
+  const q1 = ($('#q1 input:checked') || {}).value || 'yes';
+  const checked = $$('#q2 input:checked').map(i => i.value);
+  const R = [];
+  if (q1 === 'no') R.push({ c:'r', t:'先去 BIOS 开虚拟化（Part 1）', d:'脚本改不了 BIOS。重启按下面对照表的品牌按键进 BIOS：Intel 开 VT-X + VT-D，AMD 开 SVM + IOMMU。开完再回来诊断。' });
+  if (checked.includes('unsure') || (!checked.length && q1 === 'yes')) R.push({ c:'g', t:'不确定哪项占用 → 一键自动修复', m:'菜单 5', d:'fix-vbs.bat 菜单 5 会逐项检测、跳过已禁用项，依次执行 1+2+3+4+6。' });
+  if (checked.includes('hvci'))   R.push({ c:'y', t:'情况一 · HVCI 内存完整性', m:'菜单 3', d:'关闭 HypervisorEnforcedCodeIntegrity。' });
+  R.push({ c:'y', t:'情况二 · VBS 基于虚拟化的安全性', m:'菜单 1', d:'bcdedit 关闭 hypervisorlaunchtype，几乎人人都需要这一步。' });
+  if (checked.includes('hello'))  R.push({ c:'r', t:'情况四-a · WindowsHello 指纹/面部', m:'菜单 2', d:'先关它，否则 Hyper-V 可能关不掉。' });
+  if (checked.includes('hyperv')) R.push({ c:'b', t:'情况三 · Hyper-V 占用', m:'菜单 4', d:'禁用 Hyper-V / 虚拟化平台等 Windows 特性。' });
+  if (checked.includes('av'))     R.push({ c:'b', t:'情况四-b · 第三方杀软', d:'脚本不改杀软，请手动退出杀软后再运行修复。' });
+  R.push({ c:'g', t:'收尾', d:'全部修完重启电脑；重启后跑 diagnose-vbs.bat 确认 VBS 状态为 0。' });
+  $('#results').innerHTML = R.map(r => `<div class="result ${r.c === 'y' ? '' : r.c}"><span class="t">${r.t}</span>${r.m ? `<span class="menu">${r.m}</span>` : ''}<div class="d">${r.d}</div></div>`).join('');
+  goStep(3);
+};
+$('#dl-fix-btn').onclick = () => { location.href = CONFIG.raw + 'fix-vbs.bat'; };
+
+/* ================= 设置 + localStorage ================= */
+const storeKey = 'vbs-fix-settings';
+const state = Object.assign({ cursor: !coarse, coords: true, sticker: true }, JSON.parse(localStorage.getItem(storeKey) || '{}'));
+const toast = m => { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1600); };
+function applySettings() {
+  document.body.classList.toggle('no-cursor', !state.cursor);
+  document.body.style.cursor = state.cursor ? 'none' : 'auto';
+  $('#coords').style.display = state.coords ? 'block' : 'none';
+  $$('.sticker').forEach(s => s.style.display = state.sticker ? '' : 'none');
+  $('#set-cursor').checked = state.cursor;
+  $('#set-coords').checked = state.coords;
+  $('#set-sticker').checked = state.sticker;
+  localStorage.setItem(storeKey, JSON.stringify(state));
+}
+$('#gear').onclick = () => $('#settings').classList.toggle('open');
+$('#set-cursor').onchange  = e => { state.cursor  = e.target.checked; applySettings(); toast('自定义光标 ' + (state.cursor ? '已开启' : '已关闭')); };
+$('#set-coords').onchange  = e => { state.coords  = e.target.checked; applySettings(); toast('鼠标坐标 ' + (state.coords ? '已显示' : '已隐藏')); };
+$('#set-sticker').onchange = e => { state.sticker = e.target.checked; applySettings(); toast('装饰贴纸 ' + (state.sticker ? '已开启' : '已隐藏')); };
+applySettings();
+
+/* ================= 光标 & 坐标（原生实现，无依赖） ================= */
+const dot = $('#cursor-dot'), ring = $('#cursor-ring'), coordsEl = $('#coords');
+let rx = -100, ry = -100, tx = -100, ty = -100;
+addEventListener('mousemove', e => {
+  tx = e.clientX; ty = e.clientY;
+  dot.style.transform = `translate(${tx}px,${ty}px) translate(-50%,-50%)`;
+  coordsEl.textContent = `X ${String(tx).padStart(4, '0')} · Y ${String(ty).padStart(4, '0')}`;
+  // 贴纸高光跟随
+  $$('.sticker').forEach(s => {
+    const r = s.getBoundingClientRect();
+    const g = s.querySelector('.gloss');
+    if (g) { g.style.left = Math.max(0, Math.min(r.width  - 34, tx - r.left - 17)) + 'px';
+             g.style.top  = Math.max(0, Math.min(r.height - 34, ty - r.top  - 17)) + 'px'; }
   });
-  document.getElementById('next1').addEventListener('click', () => {
-    if (state.step1 === 'no') {
-      showToast('请先按下方 Part1 指引在 BIOS 中开启 VT-X/VT-D 或 SVM/IOMMU，再回到本向导');
-      // 滚到 Part1 表
-      document.querySelector('section:nth-of-type(5)')?.scrollIntoView({ behavior: 'smooth' });
-      return;
+});
+(function ringLoop() {
+  rx += (tx - rx) * .16; ry += (ty - ry) * .16;
+  ring.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`;
+  requestAnimationFrame(ringLoop);
+})();
+document.addEventListener('mouseover', e => {
+  const c = e.target.closest('[data-cursor]');
+  document.body.classList.toggle('cur-point', c && c.dataset.cursor === 'point');
+  document.body.classList.toggle('cur-grab',  c && c.dataset.cursor === 'grab');
+});
+
+/* ================= 增强层：GSAP / Lenis / Three（失败自动降级） ================= */
+const CDN = {
+  gsap:  'https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js',
+  drag:  'https://cdn.jsdelivr.net/npm/gsap@3.12.5/Draggable.js',
+  st:    'https://cdn.jsdelivr.net/npm/gsap@3.12.5/ScrollTrigger.js',
+  lenis: 'https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.mjs',
+  three: 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js',
+};
+(async () => {
+  if (reduced) return;
+  try {
+    const [gsapM, dragM, stM, lenisM] = await Promise.all([
+      import(CDN.gsap), import(CDN.drag), import(CDN.st), import(CDN.lenis),
+    ]);
+    const gsap = gsapM.gsap, Draggable = dragM.Draggable, ScrollTrigger = stM.ScrollTrigger;
+    gsap.registerPlugin(Draggable, ScrollTrigger);
+    window.gsap = gsap;
+
+    // Lenis 平滑滚动 + ScrollTrigger 同步
+    const Lenis = lenisM.default;
+    const lenis = new Lenis({ lerp: .1 });
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add(t => lenis.raf(t * 1000));
+    gsap.ticker.lagSmoothing(0);
+    $$('a[href^="#"]').forEach(a => a.addEventListener('click', e => {
+      const el = document.querySelector(a.getAttribute('href'));
+      if (el) { e.preventDefault(); lenis.scrollTo(el, { offset: -70 }); }
+    }));
+
+    // 各区段错落入场
+    $$('section:not(#hero) .reveal, footer .reveal').forEach(el => {
+      gsap.fromTo(el, { opacity: 0, y: 26 }, {
+        opacity: 1, y: 0, duration: .65, ease: 'back.out(1.4)',
+        scrollTrigger: { trigger: el, start: 'top 88%' },
+      });
+    });
+
+    // 标题乱码解码动画
+    const scramble = el => {
+      const chars = 'Δ∆#$%&@*+-/01VBSFIX'; const orig = el.dataset.orig || (el.dataset.orig = el.textContent);
+      let i = 0;
+      const h = setInterval(() => {
+        el.textContent = orig.slice(0, i) + orig.slice(i).replace(/[^\s]/g, () => chars[Math.random() * chars.length | 0]);
+        if (++i > orig.length) { clearInterval(h); el.textContent = orig; }
+      }, 28);
+    };
+    $$('h2').forEach(h => {
+      const textNode = h.firstChild;
+      ScrollTrigger.create({ trigger: h, start: 'top 85%', once: true, onEnter: () => {
+        if (textNode && textNode.nodeType === 3) {
+          const span = document.createElement('span'); span.textContent = textNode.textContent;
+          h.replaceChild(span, textNode); scramble(span);
+        }
+      }});
+    });
+
+    // 可拖拽贴纸（手写惯性）
+    $$('.sticker').forEach(st => {
+      let vx = 0, vy = 0, lx = 0, ly = 0, lt = 0;
+      Draggable.create(st, {
+        type: 'x,y', edgeResistance: .75, bounds: document.body,
+        onPress()   { document.body.classList.add('cur-grab'); gsap.to(st, { scale: 1.08, duration: .15 }); },
+        onDrag() {
+          const now = performance.now(), dt = Math.max(now - lt, 1);
+          vx = (this.x - lx) / dt * 16; vy = (this.y - ly) / dt * 16;
+          lx = this.x; ly = this.y; lt = now;
+          gsap.set(st, { rotate: Math.max(-14, Math.min(14, vx * 1.2)) });
+        },
+        onRelease() {
+          document.body.classList.remove('cur-grab');
+          gsap.to(st, { x: `+=${vx * 14}`, y: `+=${vy * 14}`, rotate: 0, scale: 1, duration: .9, ease: 'power3.out' });
+        },
+      });
+    });
+
+    // Three.js：程序化线框二十面体 + 内部 Δ 四面体，随滚动旋转缩放
+    if (!coarse && innerWidth > 900) {
+      try {
+        const THREE = await import(CDN.three);
+        const wrap = $('#three-wrap');
+        const scene = new THREE.Scene();
+        const cam = new THREE.PerspectiveCamera(42, 1, .1, 100); cam.position.z = 6;
+        const rd = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        rd.setSize(wrap.clientWidth, wrap.clientHeight);
+        rd.setPixelRatio(Math.min(devicePixelRatio, 2));
+        wrap.appendChild(rd.domElement);
+        const ico = new THREE.LineSegments(
+          new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(2.1)),
+          new THREE.LineBasicMaterial({ color: 0x171714 }));
+        const tet = new THREE.Mesh(
+          new THREE.TetrahedronGeometry(1.05),
+          new THREE.MeshBasicMaterial({ color: 0xffd23e }));
+        const tetEdge = new THREE.LineSegments(
+          new THREE.EdgesGeometry(new THREE.TetrahedronGeometry(1.06)),
+          new THREE.LineBasicMaterial({ color: 0x171714 }));
+        scene.add(ico, tet, tetEdge);
+        const st2 = ScrollTrigger.create({
+          trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true,
+        });
+        gsap.ticker.add(t => {
+          ico.rotation.y = t * .12 + st2.progress * 2.4;
+          ico.rotation.x = t * .06 + st2.progress * 1.2;
+          tet.rotation.y = -t * .3 - st2.progress * 3;
+          tetEdge.rotation.copy(tet.rotation);
+          const s = 1 - st2.progress * .35;
+          ico.scale.setScalar(s); tet.scale.setScalar(s); tetEdge.scale.setScalar(s);
+          rd.render(scene, cam);
+        });
+      } catch (e) { /* 3D 失败不留残区 */ $('#three-wrap').remove(); }
     }
-    showStep('step-2');
-  });
-
-  // Step 2
-  document.querySelectorAll('label.choice[data-step2]').forEach(label => {
-    label.addEventListener('click', () => {
-      document.querySelectorAll('label.choice[data-step2]').forEach(l => l.classList.remove('selected'));
-      label.classList.add('selected');
-      label.querySelector('input').checked = true;
-      state.step2 = label.dataset.step2;
-      document.getElementById('next2').disabled = false;
-    });
-  });
-  document.getElementById('back2').addEventListener('click', () => showStep('step-1'));
-  document.getElementById('next2').addEventListener('click', () => {
-    if (state.step2 === 'gone') {
-      showToast('问题已解决 ✅');
-      showStep('step-result');
-      renderResult('success');
-      return;
-    }
-    showStep('step-3');
-  });
-
-  // Step 3
-  document.querySelectorAll('label.check input').forEach(cb => {
-    cb.addEventListener('change', () => {
-      if (cb.checked) state.syms.add(cb.value);
-      else state.syms.delete(cb.value);
-      document.getElementById('genResult').disabled = state.syms.size === 0;
-    });
-  });
-  document.getElementById('back3').addEventListener('click', () => showStep('step-2'));
-  document.getElementById('genResult').addEventListener('click', () => {
-    showStep('step-result');
-    renderResult('analysis');
-  });
-  document.getElementById('restart-wizard').addEventListener('click', () => {
-    state.step1 = null; state.step2 = null; state.syms.clear();
-    document.querySelectorAll('input[type=radio],input[type=checkbox]').forEach(i => i.checked = false);
-    document.querySelectorAll('.choice.selected').forEach(c => c.classList.remove('selected'));
-    document.getElementById('next1').disabled = true;
-    document.getElementById('next2').disabled = true;
-    document.getElementById('genResult').disabled = true;
-    showStep('step-1');
-  });
-
-  // ==================== Result Rendering ====================
-  function renderResult(mode) {
-    const list = document.getElementById('result-list');
-    list.innerHTML = '';
-    if (mode === 'success') {
-      list.innerHTML = `
-        <div class="result empty">
-          <div class="title">问题已解决 🎉</div>
-          <div class="desc">BIOS 开启虚拟化后弹框消失。仍想保留修复脚本？见下方下载区。</div>
-        </div>`;
-      return;
-    }
-
-    const cards = [];
-    if (state.syms.has('hvci'))
-      cards.push({ menu: '菜单 3', title: '关闭 HVCI 内存完整性（情况一）', desc: '运行 fix-vbs.bat 选菜单 3，注册表 HypervisorEnforcedCodeIntegrity.Enabled 设为 0。也可在 Windows 安全中心手动关闭。' });
-    if (state.syms.has('vbs'))
-      cards.push({ menu: '菜单 1', title: '关闭 VBS（情况二）', desc: '运行 fix-vbs.bat 选菜单 1，执行 bcdedit /set hypervisorlaunchtype off。最常见情况。' });
-    if (state.syms.has('hyperv'))
-      cards.push({ menu: '菜单 4', title: '关闭 Hyper-V（情况三）', desc: '运行 fix-vbs.bat 选菜单 4，DISM 与 PowerShell 禁用 Hyper-V、VMP、HVP 等特性。注意：会同时影响 Docker / WSL2 / 安卓模拟器。' });
-    if (state.syms.has('hello'))
-      cards.push({ menu: '菜单 2', title: '关闭 WindowsHello VBS（情况四-a）', desc: '运行 fix-vbs.bat 选菜单 2，注册表 WindowsHello.Enabled 设为 0。若仍关不掉 Hyper-V，请先手动关面部/指纹 + 删 PIN。' });
-    if (state.syms.has('av'))
-      cards.push({ menu: '—', title: '退出第三方杀软（情况四-b）', desc: '本工具不自动关闭杀软。请在系统托盘退出第三方杀毒软件后重新进游戏验证。' });
-    if (state.syms.has('registry'))
-      cards.push({ menu: '菜单 6', title: '清理 DeviceGuard 注册表残留（情况四-c/d）', desc: '运行 fix-vbs.bat 选菜单 6，批量归零 EnableVirtualizationBasedSecurity、LsaCfgFlags、SystemGuard、CredentialGuard 等。等效于组策略「Device Guard → 已禁用」。' });
-
-    if (cards.length === 0) {
-      list.innerHTML = `<div class="result empty"><div class="title">未勾选任何情况</div><div class="desc">建议运行 fix-vbs.bat 菜单 5 一键自动修复，自动跳过已禁用项。</div></div>`;
-      return;
-    }
-
-    // 一键修复总是放在第一位推荐
-    list.innerHTML += `
-      <div class="result" style="border-left-color:var(--success)">
-        <div class="title">推荐：一键自动修复 <span class="menu" style="background:rgba(16,185,129,0.12);color:var(--success)">fix-vbs.bat 菜单 5</span></div>
-        <div class="desc">自动检测当前状态，依次执行菜单 1+2+3+4+6 中尚未禁用的项，跳过已禁用项。</div>
-      </div>`;
-
-    cards.forEach(c => {
-      list.innerHTML += `
-        <div class="result">
-          <div class="title">${c.title}<span class="menu">fix-vbs.bat ${c.menu}</span></div>
-          <div class="desc">${c.desc}</div>
-        </div>`;
-    });
-
-    list.innerHTML += `
-      <div class="result empty">
-        <div class="title">运行后必做</div>
-        <div class="desc">① 重启电脑；② 重启后右键 diagnose-vbs.bat 以管理员身份运行复查；③ 重新进游戏验证弹框消失。</div>
-      </div>`;
+  } catch (e) {
+    // CDN 全挂：静态展示，wizard 仍可用
+    $$('.reveal').forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; });
   }
-
-  // ==================== Accordion ====================
-  document.querySelectorAll('.acc-head').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const item = btn.parentElement;
-      const body = item.querySelector('.acc-body');
-      const isOpen = item.classList.contains('open');
-      // close others (optional)
-      // document.querySelectorAll('.acc-item').forEach(i => i.classList.remove('open'));
-      if (isOpen) {
-        item.classList.remove('open');
-        body.style.maxHeight = '0';
-      } else {
-        item.classList.add('open');
-        body.style.maxHeight = body.scrollHeight + 'px';
-      }
-    });
-  });
-
-  // ==================== Toast ====================
-  let toastTimer;
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
-  }
-
-  // ==================== Populate repo + download links after push ====================
-  // These will be set by the builder script after gh repo create returns the URL.
-  // Default placeholders so the page works offline.
-  function setRepoLinks(url) {
-    if (!url) return;
-    document.getElementById('repo-link').href = url;
-    document.getElementById('repo-link-footer').href = url;
-    const userRepo = url.replace(/^https?:\/\/github\.com\//, '');
-    const base = 'https://raw.githubusercontent.com/' + userRepo + '/main/';
-    document.getElementById('dl-diag').href = base + 'diagnose-vbs.bat';
-    document.getElementById('dl-diag').setAttribute('download', 'diagnose-vbs.bat');
-    document.getElementById('dl-fix').href = base + 'fix-vbs.bat';
-    document.getElementById('dl-fix').setAttribute('download', 'fix-vbs.bat');
-    document.getElementById('dl-restore').href = base + 'restore-vbs.bat';
-    document.getElementById('dl-restore').setAttribute('download', 'restore-vbs.bat');
-  }
-  window.__setRepoLinks = setRepoLinks;
-  // Auto-populate with the actual GitHub repository URL (committed 2026-09-17)
-  setRepoLinks('https://github.com/zuoyou12/delta-force-vbs-fix');
+})();
 </script>
-
 </body>
 </html>
