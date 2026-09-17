@@ -20,10 +20,15 @@ echo 恢复日志 - %date% %time% > "%LOG%"
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo.
-    echo   [错误] 本脚本必须以管理员身份运行。
-    echo   请右键本文件 -> 以管理员身份运行。
+    echo   [提示] 当前不是管理员权限，正在尝试自动提权...
+    echo   请在弹出的「用户账户控制」窗口中点「是」。
     echo.
-    pause
+    powershell -NoProfile -Command "Start-Process -FilePath '%~f0' -Verb RunAs" >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo   [错误] 自动提权失败。请右键本文件 -^> 以管理员身份运行。
+        echo.
+        set /p "_=按回车退出..."
+    )
     exit /b 1
 )
 
@@ -77,6 +82,6 @@ echo   恢复完成，请重启电脑生效。
 echo   重启后建议运行 diagnose-vbs.bat 复查 VBS 状态。
 echo ============================================================
 echo.
-pause
+set /p "_=按回车退出..."
 endlocal
 exit /b 0

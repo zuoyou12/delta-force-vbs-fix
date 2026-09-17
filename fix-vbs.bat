@@ -23,10 +23,15 @@ echo 修复日志 - %date% %time% > "%LOG%"
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo.
-    echo   [错误] 本脚本必须以管理员身份运行。
-    echo   请右键本文件 -> 以管理员身份运行。
+    echo   [提示] 当前不是管理员权限，正在尝试自动提权...
+    echo   请在弹出的「用户账户控制」窗口中点「是」。
     echo.
-    pause
+    powershell -NoProfile -Command "Start-Process -FilePath '%~f0' -Verb RunAs" >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo   [错误] 自动提权失败。请右键本文件 -^> 以管理员身份运行。
+        echo.
+        call :pause
+    )
     exit /b 1
 )
 
@@ -67,10 +72,15 @@ echo   操作完成。强烈建议执行菜单 7 重启电脑后再次运行
 echo   diagnose-vbs.bat 复查状态。
 echo   --------------------------------------------------------
 echo.
-pause
+call :pause
 goto :menu
 
 rem ============== 子例程 ==============
+
+rem -- 不会因 redirected stdin 而闪退的暂停
+:pause
+set /p "_=按回车继续..."
+goto :eof
 
 :fix_vbs
 echo [情况二] 关闭 VBS（bcdedit /set hypervisorlaunchtype off）...

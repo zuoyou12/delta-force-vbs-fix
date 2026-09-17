@@ -9,14 +9,19 @@ rem   对齐腾讯游戏安全官方指引 gamesafe.qq.com/article/1181.shtml
 rem   覆盖 Part1(BIOS) + 情况一 HVCI + 情况二 VBS + 情况三 Hyper-V + 情况四 其他
 rem ============================================================
 
-rem ---------- 管理员权限检测 ----------
+rem ---------- 管理员权限检测（不足时自动提权） ----------
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo.
-    echo   [错误] 本脚本需要管理员权限才能完整读取 bcdedit / DeviceGuard 注册表。
-    echo   请右键本文件 -> 以管理员身份运行。
+    echo   [提示] 当前不是管理员权限，正在尝试自动提权...
+    echo   请在弹出的「用户账户控制」窗口中点「是」。
     echo.
-    pause
+    powershell -NoProfile -Command "Start-Process -FilePath '%~f0' -Verb RunAs" >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo   [错误] 自动提权失败。请右键本文件 -^> 以管理员身份运行。
+        echo.
+        set /p "_=按回车退出..."
+    )
     exit /b 1
 )
 
@@ -88,5 +93,5 @@ echo.
 echo   修复后请重启电脑，再用本脚本复查。
 echo ============================================================
 echo.
-pause
+set /p "_=按回车退出..."
 endlocal
