@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/banner.jpg" alt="Delta Force VBS Fix Toolkit" width="100%">
+  <img src="docs/assets/banner.svg" alt="Delta Force VBS Fix Toolkit" width="100%">
 </p>
 
 <h1 align="center">三角洲行动 CPU 虚拟化修复工具包</h1>
