@@ -23,3 +23,9 @@ __pycache__/
 # 备份
 *.bak
 *.tmp
+
+# Runtime state (legacy or manual local copies)
+backups/
+reports/
+active.json
+*.tmp

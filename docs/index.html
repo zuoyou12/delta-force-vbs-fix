@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>三角洲行动 CPU 虚拟化修复向导 — Δ VBS-FIX</title>
-<meta name="description" content="白纸手绘风的三角洲行动国服 CPU 虚拟化弹框修复向导：3 步诊断，对照腾讯游戏安全官方指引给出对应修复脚本。">
+<title>三角洲行动 CPU 虚拟化修复向导 2.0 — Δ VBS-FIX</title>
+<meta name="description" content="三角洲行动 CPU 虚拟化工具包 2.0：只读诊断、修改前备份、按原配置恢复。完整 ZIP 下载与三步排查向导。">
 <style>
 /* ============ 纸与墨 ============ */
 :root{
@@ -331,6 +331,7 @@ footer a{text-decoration:none;border-bottom:1px solid var(--ink-faint)}
 </style>
 </head>
 <body>
+<noscript><style>#preloader{display:none}.reveal{opacity:1!important;transform:none!important}body,button{cursor:auto!important}</style><p style="padding:85px 6vw 12px">交互向导需要 JavaScript。可直接向下查看说明并下载完整工具包。</p></noscript>
 
 <!-- 分栏线 -->
 <div class="rails" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -372,14 +373,14 @@ footer a{text-decoration:none;border-bottom:1px solid var(--ink-faint)}
 <!-- 首屏 -->
 <section id="hero" data-anchor="top">
   <div id="three-wrap" aria-hidden="true"></div>
-  <span class="tag reveal">DELTA FORCE · 腾讯游戏安全指引对齐</span>
+  <span class="tag reveal">DELTA FORCE · V2.0 · 修改前备份</span>
   <h1>
     <span class="row"><span class="reveal">三角洲行动</span></span>
     <span class="row"><span class="reveal"><span class="hl">CPU 虚拟化</span></span></span>
     <span class="row"><span class="reveal">弹框修复向导</span></span>
   </h1>
   <p class="sub reveal">BIOS 里明明开了 VT-X/SVM，游戏仍弹「未开启 CPU 虚拟化」？<br>
-  对齐 gamesafe.qq.com 官方 4 种情况 —— 3 步问答，告诉你该修哪一项。</p>
+  参考腾讯游戏安全指引，3 步问答辅助排查。<br>2.0 新增修改前备份、原配置恢复与诊断报告。</p>
   <div class="cta-row reveal">
     <a class="btn primary" href="#wizard" data-cursor="point">开始诊断 ↓</a>
     <a class="btn" href="https://github.com/zuoyou12/delta-force-vbs-fix" target="_blank" rel="noopener" data-cursor="point">GitHub 仓库 ↗</a>
@@ -403,7 +404,7 @@ footer a{text-decoration:none;border-bottom:1px solid var(--ink-faint)}
   <h2 class="reveal">交互式诊断向导
     <svg class="squiggle" viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M2 8 Q 30 2 60 7 T 118 7 T 198 6" fill="none" stroke="#ff5252" stroke-width="3" stroke-linecap="round"/></svg>
   </h2>
-  <p class="lead reveal">回答 3 个问题，给出你应运行 <code class="k">fix-vbs.bat</code> 的具体菜单编号。所有脚本需在桌面右键「以管理员身份运行」。</p>
+  <p class="lead reveal">回答 3 个问题获取排查建议。网页不能读取本机状态，请先运行只读诊断；修复和恢复需右键「以管理员身份运行」。</p>
 
   <div class="panel reveal">
     <div class="tape" aria-hidden="true"></div>
@@ -411,7 +412,7 @@ footer a{text-decoration:none;border-bottom:1px solid var(--ink-faint)}
 
     <div class="wstep active" data-step="1">
       <h3>第 1 步 · BIOS 里开过 CPU 虚拟化吗？</h3>
-      <p class="hint">Win + R 输 msinfo32 可查；Intel 需开 VT-X + VT-D，AMD 需开 SVM + IOMMU。</p>
+      <p class="hint">可在任务管理器 → 性能 → CPU 查看“虚拟化”。VT-d / IOMMU 需另按主板文档核对。</p>
       <div class="choices" id="q1">
         <label class="choice" data-cursor="point"><input type="radio" name="q1" value="yes"><span><span class="t">已开启</span><br><span class="d">BIOS 里确认开过 VT-X/SVM，但游戏还是弹框</span></span></label>
         <label class="choice" data-cursor="point"><input type="radio" name="q1" value="no"><span><span class="t">没开过 / 不确定</span><br><span class="d">从没进过 BIOS，或者不知道有没有开</span></span></label>
@@ -421,13 +422,13 @@ footer a{text-decoration:none;border-bottom:1px solid var(--ink-faint)}
 
     <div class="wstep" data-step="2">
       <h3>第 2 步 · 你电脑上中了几条？（多选）</h3>
-      <p class="hint">不确定的全勾上也没关系，诊断脚本会再核实一遍。</p>
+      <p class="hint">只勾选你确认的项目；不了解就选“不确定”，先用只读诊断核对。</p>
       <div class="choices" id="q2">
         <label class="choice" data-cursor="point"><input type="checkbox" value="hvci"><span><span class="t">内核隔离 · 内存完整性是开的</span><br><span class="d">Windows 安全中心 → 设备安全性里能看到，默认很多新机是开的（情况一）</span></span></label>
-        <label class="choice" data-cursor="point"><input type="checkbox" value="hyperv"><span><span class="t">用过 Hyper-V / WSL2 / Docker / 安卓模拟器</span><br><span class="d">这些都会占用虚拟化（情况三）</span></span></label>
-        <label class="choice" data-cursor="point"><input type="checkbox" value="hello"><span><span class="t">开了 Windows Hello 指纹 / 面部登录</span><br><span class="d">会牵着 Hyper-V 关不掉（情况四-a）</span></span></label>
+        <label class="choice" data-cursor="point"><input type="checkbox" value="hyperv"><span><span class="t">用过 Hyper-V / WSL2 / Docker / 安卓模拟器</span><br><span class="d">部分软件依赖 hypervisor，已安装不代表当前正在运行</span></span></label>
+        <label class="choice" data-cursor="point"><input type="checkbox" value="hello"><span><span class="t">开了 Windows Hello 指纹 / 面部登录</span><br><span class="d">仅在其他步骤失败时按官方特殊情况检查</span></span></label>
         <label class="choice" data-cursor="point"><input type="checkbox" value="av"><span><span class="t">装了第三方杀毒软件</span><br><span class="d">部分杀软会占用 VT-x（情况四-b）</span></span></label>
-        <label class="choice" data-cursor="point"><input type="checkbox" value="unsure"><span><span class="t">都不确定 / 懒得看</span><br><span class="d">直接走一键自动修复</span></span></label>
+        <label class="choice" data-cursor="point"><input type="checkbox" value="unsure"><span><span class="t">都不确定 / 先做诊断</span><br><span class="d">先导出报告，再选择需要的修改</span></span></label>
       </div>
       <div class="wrow">
         <button class="btn" id="back2" data-cursor="point">← 上一步</button>
@@ -441,7 +442,7 @@ footer a{text-decoration:none;border-bottom:1px solid var(--ink-faint)}
       <div id="results"></div>
       <div class="wrow">
         <button class="btn" id="back3" data-cursor="point">← 重答</button>
-        <button class="btn blue" id="dl-fix-btn" data-cursor="point">下载 fix-vbs.bat ↓</button>
+        <button class="btn blue" id="dl-fix-btn" data-cursor="point">下载 2.0 完整 ZIP ↓</button>
       </div>
     </div>
   </div>
@@ -450,26 +451,27 @@ footer a{text-decoration:none;border-bottom:1px solid var(--ink-faint)}
 <!-- 脚本下载 -->
 <section id="dl">
   <span class="tag reveal">SCRIPTS</span>
-  <h2 class="reveal">三个批处理，各管一段
+  <h2 class="reveal">三个入口，共用一份备份
     <svg class="squiggle" viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M2 7 Q 40 3 80 8 T 150 6 T 198 7" fill="none" stroke="#4a7bff" stroke-width="3" stroke-linecap="round"/></svg>
   </h2>
-  <p class="lead reveal">UTF-8 编码、自带日志、一条命令一个菜单项。点按钮直接保存为 .bat 文件（不是网页代码）。</p>
+  <p class="lead reveal">2.0 保留诊断 / 修复 / 恢复三个 BAT 入口，共用 PowerShell 核心。请下载完整 ZIP 并全部解压，保留 scripts 文件夹。</p>
   <div class="stack reveal" id="stack"></div>
+  <p class="lead reveal" style="margin-top:24px;font-size:14px"><a href="./downloads/delta-force-vbs-fix-2.0.0.sha256">SHA-256 校验值</a> · Windows 10 / 11 x64 · Windows PowerShell 5.1</p>
 
   <div class="cta-row reveal" style="justify-content:center;margin-top:38px">
-    <a class="btn blue" href="https://github.com/zuoyou12/delta-force-vbs-fix/archive/refs/heads/main.zip" data-cursor="point">整包下载 ZIP（含全部脚本 + 说明）</a>
+    <a class="btn blue" href="./downloads/delta-force-vbs-fix-2.0.0.zip" data-cursor="point">下载 2.0 完整 ZIP（含核心与说明）</a>
     <a class="btn" href="https://github.com/zuoyou12/delta-force-vbs-fix" target="_blank" rel="noopener" data-cursor="point">去仓库看源码</a>
   </div>
 
   <div class="callout reveal" style="margin-top:44px">
     <p><strong>下载后必看（3 件事）</strong></p>
     <ol style="margin:10px 0 0 22px;line-height:2">
-      <li><strong>解除锁定</strong>：网上下载的文件会被 Windows 标记。右键 .bat → 属性 → 勾选「解除锁定」→ 确定；没有这一项就跳过。</li>
-      <li><strong>管理员运行</strong>：右键 .bat → <u>以管理员身份运行</u>。直接双击会因为权限不足改不动系统设置。</li>
-      <li><strong>一键修复</strong>：不想逐项看？fix-vbs.bat 里选 <strong>5</strong>，自动检测 + 全套修复；玩完用 restore-vbs.bat 还原。</li>
+      <li><strong>解除锁定</strong>：如 ZIP 属性中有「解除锁定」，勾选后再解压。三个 BAT 必须与 scripts 文件夹放在同一目录。</li>
+      <li><strong>管理员运行</strong>：修复 / 恢复请右键 .bat → <u>以管理员身份运行</u>。诊断可以普通权限运行，权限不足的项目显示“未知”。</li>
+      <li><strong>先诊断，再修改</strong>：菜单 <strong>5</strong> 仅按检测结果执行基础启动配置修复；每项修改前自动备份，玩完用 restore-vbs.bat 按原配置恢复。菜单 1 / 5 也会影响 WSL2 / Docker。</li>
     </ol>
     <p style="margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--ink-faint)">
-      为什么不做 .exe？批处理是纯文本，你可以右键「编辑」看到每一行改了什么， exe 反而说不清。同功能、更透明。
+      备份与操作日志：%ProgramData%\DeltaForceVbsFix。诊断报告：%LOCALAPPDATA%\DeltaForceVbsFix\Reports。旧版未备份的修改无法自动还原。
     </p>
   </div>
 </section>
@@ -480,7 +482,7 @@ footer a{text-decoration:none;border-bottom:1px solid var(--ink-faint)}
   <h2 class="reveal">官方指引 ↔ 菜单一览
     <svg class="squiggle" viewBox="0 0 200 12" preserveAspectRatio="none"><path d="M2 8 Q 34 2 70 7 T 130 6 T 198 7" fill="none" stroke="#2fbf71" stroke-width="3" stroke-linecap="round"/></svg>
   </h2>
-  <p class="lead reveal">数据来自腾讯游戏安全团队官方文章 gamesafe.qq.com/article/1181.shtml，逐条对应到脚本菜单。</p>
+  <p class="lead reveal">参考腾讯游戏安全官方文章，菜单是本工具的实现。以实际弹框和本机诊断为准；策略管理与 UEFI 锁可能需要管理员处理。</p>
   <div class="tbl-wrap reveal">
     <table id="ref-table">
       <caption>// 弹框原因 → 修复入口</caption>
@@ -546,23 +548,23 @@ footer a{text-decoration:none;border-bottom:1px solid var(--ink-faint)}
 /* ================= 数据配置（统一替换） ================= */
 const CONFIG = {
   repo: 'https://github.com/zuoyou12/delta-force-vbs-fix',
-  raw:  'https://raw.githubusercontent.com/zuoyou12/delta-force-vbs-fix/main/',
-  zip:  'https://github.com/zuoyou12/delta-force-vbs-fix/archive/refs/heads/main.zip',
+  version: '2.0.0',
+  zip:  './downloads/delta-force-vbs-fix-2.0.0.zip',
   scripts: [
-    { file:'diagnose-vbs.bat', tape:'yellow', rot:-3, note:'先跑我', desc:'只读诊断 · 8 项检测，报告命中哪种情况', icon:'search' },
-    { file:'fix-vbs.bat',      tape:'red',    rot:2,  note:'菜单 0-7', desc:'菜单修复 · 覆盖官方 4 种情况 + 一键修复', icon:'wrench' },
-    { file:'restore-vbs.bat',  tape:'blue',   rot:-2, note:'善后恢复', desc:'游戏结束后恢复 VBS / HVCI / Hyper-V', icon:'undo' },
+    { file:'diagnose-vbs.bat', tape:'yellow', rot:-3, note:'先跑我', desc:'只读诊断 · 未知状态明确提示，导出 JSON 报告', icon:'search' },
+    { file:'fix-vbs.bat',      tape:'red',    rot:2,  note:'菜单 0-8', desc:'按项修复 · 写入前备份，失败时保留原值', icon:'wrench' },
+    { file:'restore-vbs.bat',  tape:'blue',   rot:-2, note:'原值恢复', desc:'仅恢复备份中的原配置，失败后可重试', icon:'undo' },
   ],
   refRows: [
     ['Part 1','BIOS 未开 VT-X/VT-D 或 SVM/IOMMU','手动进 BIOS 开启','diagnose 检测 + 下方 BIOS 表'],
     ['情况一','HVCI 内存完整性占用','安全中心 → 内核隔离 → 关内存完整性','fix 菜单 3'],
     ['情况二','VBS 基于虚拟化的安全性','bcdedit /set hypervisorlaunchtype off','fix 菜单 1'],
     ['情况三','Hyper-V 占用','启用或关闭 Windows 功能 → 取消 Hyper-V','fix 菜单 4'],
-    ['情况四-a','WindowsHello 阻止关 Hyper-V','关面部/指纹 + 删 PIN','fix 菜单 2'],
+    ['特殊情况','Windows Hello 登录功能关联','先确认账户密码，再手动检查登录选项','fix 菜单 2 · 手动指引'],
     ['情况四-b','第三方杀软占用','退出第三方杀软','diagnose 检测提示'],
-    ['情况四-c/d','注册表残留 / 组策略 Device Guard','regedit / gpedit 改 0','fix 菜单 6'],
-    ['全套','不确定 / 一把梭','—','fix 菜单 5 一键修复'],
-    ['恢复','游戏结束恢复安全特性','反向操作','restore-vbs.bat'],
+    ['情况四','注册表 / 策略配置','按官方指引核对；管理策略需联系管理员','fix 菜单 6 · 仅现有本地配置'],
+    ['基础修复','诊断后确认 VBS / hypervisor 状态','仅在必要时修改启动配置','fix 菜单 5'],
+    ['恢复','恢复本次修复前的配置','使用本机 2.0 活动备份','restore-vbs.bat'],
   ],
   biosRows: [
     ['华硕 ASUS','F2 / DEL','Intel','Virtualization Technology + VT-d'],
@@ -575,12 +577,12 @@ const CONFIG = {
     ['七彩虹 Colorful','DEL','Intel','Advanced → CPU Virtualization'],
   ],
   faq: [
-    ['这是开挂吗？会封号吗？','不是。腾讯游戏安全团队与微软合作，要求玩家开启系统硬件安全特性以保障对局安全。本工具只是辅助完成官方指引里的系统设置，不碰游戏文件与反作弊。'],
-    ['改完能恢复吗？','可以。restore-vbs.bat 一键反向恢复全部修改，重启生效。'],
+    ['工具会修改哪些内容？','只处理所选菜单对应的 Windows 启动配置、指定注册表值或虚拟化功能，不修改游戏文件。它是第三方工具，无法保证解决所有弹框，也无法保证账号处理结果。'],
+    ['改完能恢复吗？','2.0 在写入前自动保存本机原配置。restore-vbs.bat 只按备份恢复，不会把所有功能一律打开；功能状态待重启时保留备份，重启后再次恢复完成校验。旧版未备份修改、手动 BIOS 与登录凭据不在恢复范围内。'],
     ['为什么必须管理员运行？','bcdedit、reg add HKLM、DISM 都需要管理员权限，否则写不进系统。'],
-    ['关了 Hyper-V，Docker / WSL2 / 模拟器怎么办？','它们依赖 Hyper-V，游戏期间会受影响；玩完用 restore-vbs.bat 恢复即可。重度依赖者可只关情况二 VBS（菜单 1）。'],
-    ['杀软报毒？','工具只改官方指引提到的注册表项与系统特性，无任何可疑行为。加白名单或暂时退出杀软即可。'],
-    ['运行完还要做什么？','重启电脑生效。重启后再跑 diagnose-vbs.bat 确认 VBS 状态已变为 0。'],
+    ['Docker / WSL2 / 模拟器会受影响吗？','可能会。菜单 1 / 5 禁止 hypervisor 随启动加载，即使不卸载功能也会影响依赖它的软件。请保存工作，按需修改，之后按备份恢复并重启。'],
+    ['杀软报毒或操作失败怎么办？','先核对下载来源、工具源码和诊断报告，查看操作日志中的错误。脚本不会自动关闭杀软，也不会绕过组策略或 UEFI 锁；不要把检查失败理解成已关闭。'],
+    ['运行完还要做什么？','保存工作并重启，再运行 diagnose-vbs.bat 核对启动配置与实际运行状态。配置已写入不等于运行状态立即改变；仍弹框时按官方指引继续排查。'],
   ],
 };
 
@@ -626,27 +628,13 @@ const icons = {
   wrench: '<svg viewBox="0 0 64 60"><path d="M44 8 a14 14 0 1 0 6 26 L30 54 a6 6 0 0 1 -8 -8 L42 26" fill="none" stroke="#171714" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   undo:   '<svg viewBox="0 0 64 60"><path d="M20 14 L8 26 L20 38" fill="none" stroke="#171714" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 26 h30 a14 14 0 0 1 0 28 h-16" fill="none" stroke="#171714" stroke-width="4"/></svg>',
 };
-/* ================= 下载：Blob 强制保存为 .bat =================
-   raw 链接的 Content-Type 是 text/plain，直接 <a download> 在部分浏览器
-   会变成"打开新标签显示代码"。这里先 fetch 原始字节，再用 Blob 以
-   application/x-bat 生成对象 URL，保证点一下就保存为可运行的批处理。 */
-async function downloadBat(file) {
-  try {
-    const res = await fetch(CONFIG.raw + file, { cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const bytes = await res.arrayBuffer();          // 保留 UTF-8 BOM 原始字节
-    const blob = new Blob([bytes], { type: 'application/x-bat' });
-    const url  = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = file;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
-    toast(file + ' 已开始下载 — 右键以管理员身份运行');
-  } catch (e) {
-    // fetch 失败（CORS/断网）兜底：打开 raw 页，提示 Ctrl+S 保存
-    toast('直接下载失败，请在打开的页面按 Ctrl+S 保存为 ' + file);
-    setTimeout(() => window.open(CONFIG.raw + file, '_blank', 'noopener'), 600);
-  }
+/* ================= 完整包下载 ================= */
+function downloadToolkit() {
+  const link = document.createElement('a');
+  link.href = CONFIG.zip;
+  link.download = 'delta-force-vbs-fix-' + CONFIG.version + '.zip';
+  document.body.appendChild(link); link.click(); link.remove();
+  toast('请完整解压 ZIP，保留 scripts 文件夹后运行 BAT');
 }
 
 $('#stack').innerHTML = CONFIG.scripts.map(s => `
@@ -654,9 +642,9 @@ $('#stack').innerHTML = CONFIG.scripts.map(s => `
     <div class="tape"></div><div class="note">${s.note}</div>
     <div class="shot">${icons[s.icon]}</div>
     <div class="name">${s.file}</div><div class="desc">${s.desc}</div>
-    <button class="btn primary" data-dl="${s.file}" data-cursor="point">下载 .bat ↓</button>
+    <button class="btn primary" data-dl="${s.file}" data-cursor="point">下载完整工具包 ↓</button>
   </div>`).join('');
-$$('#stack [data-dl]').forEach(b => b.addEventListener('click', () => downloadBat(b.dataset.dl)));
+$$('#stack [data-dl]').forEach(b => b.addEventListener('click', () => downloadToolkit()));
 // 表格
 $('#ref-table tbody').innerHTML  = CONFIG.refRows.map(r => `<tr><td class="m">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="m">${r[3]}</td></tr>`).join('');
 $('#bios-table tbody').innerHTML = CONFIG.biosRows.map(r => `<tr><td class="m">${r[0]}</td><td class="m">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('');
@@ -672,30 +660,34 @@ function goStep(n) {
   pips.forEach((p, i) => { p.classList.toggle('on', i + 1 === n); p.classList.toggle('done', i + 1 < n); });
 }
 $$('#q1 .choice').forEach(c => c.addEventListener('click', () => { $$('#q1 .choice').forEach(x => x.classList.remove('sel')); c.classList.add('sel'); }));
-$$('#q2 .choice').forEach(c => c.addEventListener('click', e => { if (e.target.tagName !== 'INPUT') c.querySelector('input').checked = !c.querySelector('input').checked; c.classList.toggle('sel', c.querySelector('input').checked); }));
-$('#next1').onclick = () => goStep(2);
+$$('#q2 input').forEach(input => input.addEventListener('change', () => input.closest('.choice').classList.toggle('sel', input.checked)));
+$('#next1').onclick = () => { if (!$('#q1 input:checked')) { toast('请先选择是否已确认 BIOS 虚拟化'); return; } goStep(2); };
 $('#back2').onclick = () => goStep(1);
 $('#back3').onclick = () => goStep(1);
 $('#next2').onclick = () => {
-  const q1 = ($('#q1 input:checked') || {}).value || 'yes';
+  const q1 = ($('#q1 input:checked') || {}).value || 'no';
   const checked = $$('#q2 input:checked').map(i => i.value);
-  const R = [];
-  if (q1 === 'no') R.push({ c:'r', t:'先去 BIOS 开虚拟化（Part 1）', d:'脚本改不了 BIOS。重启按下面对照表的品牌按键进 BIOS：Intel 开 VT-X + VT-D，AMD 开 SVM + IOMMU。开完再回来诊断。' });
-  if (checked.includes('unsure') || (!checked.length && q1 === 'yes')) R.push({ c:'g', t:'不确定哪项占用 → 一键自动修复', m:'菜单 5', d:'fix-vbs.bat 菜单 5 会逐项检测、跳过已禁用项，依次执行 1+2+3+4+6。' });
-  if (checked.includes('hvci'))   R.push({ c:'y', t:'情况一 · HVCI 内存完整性', m:'菜单 3', d:'关闭 HypervisorEnforcedCodeIntegrity。' });
-  R.push({ c:'y', t:'情况二 · VBS 基于虚拟化的安全性', m:'菜单 1', d:'bcdedit 关闭 hypervisorlaunchtype，几乎人人都需要这一步。' });
-  if (checked.includes('hello'))  R.push({ c:'r', t:'情况四-a · WindowsHello 指纹/面部', m:'菜单 2', d:'先关它，否则 Hyper-V 可能关不掉。' });
-  if (checked.includes('hyperv')) R.push({ c:'b', t:'情况三 · Hyper-V 占用', m:'菜单 4', d:'禁用 Hyper-V / 虚拟化平台等 Windows 特性。' });
-  if (checked.includes('av'))     R.push({ c:'b', t:'情况四-b · 第三方杀软', d:'脚本不改杀软，请手动退出杀软后再运行修复。' });
-  R.push({ c:'g', t:'收尾', d:'全部修完重启电脑；重启后跑 diagnose-vbs.bat 确认 VBS 状态为 0。' });
+  const R = [{ c:'b', t:'先获取本机诊断报告', m:'diagnose-vbs.bat', d:'网页问答只能辅助排查，不能确认本机状态。请先完整下载并解压工具包，再运行只读诊断。' }];
+  if (q1 === 'no') {
+    R.push({ c:'r', t:'先确认 BIOS 虚拟化', d:'按主板说明核对 VT-x / SVM 及 VT-d / IOMMU。检测到 hypervisor 正在运行时，CPU 的部分属性可能被屏蔽，不要仅凭 False 判断 BIOS 没开。确认后再继续修复。' });
+  } else {
+    if (checked.includes('unsure') || !checked.length) R.push({ c:'y', t:'诊断后按需执行基础修复', m:'菜单 5', d:'仅在检测到 VBS 已配置或 hypervisor 运行时修改启动配置；不会批量关闭 Hello、注册表和 Windows 功能。菜单 1 / 5 同样会影响 WSL2 / Docker。' });
+    if (checked.includes('hvci')) R.push({ c:'y', t:'核对内存完整性', m:'菜单 3', d:'确认弹框与 HVCI 有关后再关闭。修改前备份，重启后复查。' });
+    if (checked.includes('hyperv')) R.push({ c:'b', t:'核对 hypervisor 与 Windows 功能', m:'菜单 1 / 4', d:'已安装不代表正在运行。菜单 1 调整启动加载；菜单 4 单独禁用 hypervisor 与两个虚拟化平台，需要确认后执行。' });
+  }
+  if (checked.includes('hello')) R.push({ c:'y', t:'Windows Hello 手动检查', m:'菜单 2', d:'仅在官方指引所述特殊情况中按需检查登录选项。先确认账户密码；脚本不会删除 PIN、指纹或面部数据。' });
+  if (checked.includes('av')) R.push({ c:'b', t:'核对第三方安全软件', d:'安装杀软不能证明它是原因。请按官方指引与软件文档排查，脚本不自动关闭或卸载杀软。' });
+  R.push({ c:'g', t:'修改前备份，完成后重启复查', d:'2.0 自动备份所涉及的原配置。游戏结束后用 restore-vbs.bat 恢复；出现待重启提示时，重启后再次恢复完成校验。' });
   $('#results').innerHTML = R.map(r => `<div class="result ${r.c === 'y' ? '' : r.c}"><span class="t">${r.t}</span>${r.m ? `<span class="menu">${r.m}</span>` : ''}<div class="d">${r.d}</div></div>`).join('');
   goStep(3);
 };
-$('#dl-fix-btn').onclick = () => downloadBat('fix-vbs.bat');
+$('#dl-fix-btn').onclick = () => downloadToolkit();
 
 /* ================= 设置 + localStorage ================= */
 const storeKey = 'vbs-fix-settings';
-const state = Object.assign({ cursor: !coarse, coords: true, sticker: true }, JSON.parse(localStorage.getItem(storeKey) || '{}'));
+let savedSettings = {};
+try { savedSettings = JSON.parse(localStorage.getItem(storeKey) || '{}') || {}; } catch (_) { /* 存储不可用或损坏时使用默认值 */ }
+const state = Object.assign({ cursor: !coarse, coords: true, sticker: true }, savedSettings);
 const toast = m => { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1600); };
 function applySettings() {
   document.body.classList.toggle('no-cursor', !state.cursor);
@@ -705,7 +697,7 @@ function applySettings() {
   $('#set-cursor').checked = state.cursor;
   $('#set-coords').checked = state.coords;
   $('#set-sticker').checked = state.sticker;
-  localStorage.setItem(storeKey, JSON.stringify(state));
+  try { localStorage.setItem(storeKey, JSON.stringify(state)); } catch (_) { /* 隐私模式仍可使用向导 */ }
 }
 $('#gear').onclick = () => $('#settings').classList.toggle('open');
 $('#set-cursor').onchange  = e => { state.cursor  = e.target.checked; applySettings(); toast('自定义光标 ' + (state.cursor ? '已开启' : '已关闭')); };
