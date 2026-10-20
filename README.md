@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/assets/banner.svg" alt="Delta Force VBS Fix Toolkit" width="100%"></p>
+<p align="center"><a href="https://zuoyou12.github.io/delta-force-vbs-fix/"><img src="docs/assets/banner.svg" alt="打开三角洲行动 CPU 虚拟化诊断网页" width="100%"></a></p>
 
 # 三角洲行动 CPU 虚拟化工具包 2.0
 
